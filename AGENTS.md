@@ -115,6 +115,7 @@ Key patterns:
 - **PRD:** [docs/PRD.md](docs/PRD.md) has US1–US13 with acceptance criteria, the roles and the out-of-scope list. The acceptance criteria are the spec: build what they say and nothing from the out-of-scope list.
 - **Design system:** UI work follows [DESIGN.md](DESIGN.md) (colors, type, spacing, components). Use its tokens through the Tailwind theme; never hard-code colors or font sizes.
 - **Mockups:** `docs/design/`, one image per screen. They are the source of truth for layout. If a mockup and the PRD disagree, follow the PRD and point out the difference.
+  - Placeholders until #5: `group-home.png` (balance first, then budgets, live feed, Add expense button), `add-expense-equal.png` (shares listed per member), `add-expense-exact.png` (amount left shown live, Save disabled until it is $0.00). Source: `mockup.html`.
 - **Avoid the generic AI look:** no colored side stripes on cards, no rows of three identical cards, no oversized rounded corners, no gradients that DESIGN.md doesn't define.
 - **Mobile first:** one column on phones, two columns from 1024 px.
 
@@ -192,4 +193,4 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 
 <!-- Each change to this file goes through a PR approved by both partners and adds a line here. -->
 - v1 · 2026-10-30 · Arianna · First draft, based on PRD v0.2.
-- v2 · 2026-10-30 · Arianna · After the before/after test on #8: cover every acceptance criterion, Zod for all validation, no raw cents in messages (#20).
+- v2 · 2026-10-30 · Arianna · After the before/after test on #8: cover every acceptance criterion, Zod for all validation, no raw cents in messages, describe the placeholder mockups (#20).
