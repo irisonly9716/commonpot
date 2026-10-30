@@ -46,6 +46,37 @@ describe("US3 log and split an expense", () => {
     });
   });
 
+  it("creates exact shares and rejects a total mismatch", () => {
+    expect(
+      createExpense({
+        amount: "10.00",
+        description: "Lunch",
+        category: "food",
+        date: "2026-10-30",
+        paidBy: "alex",
+        sharedBy: ["alex", "blair"],
+        splitType: "exact",
+        exactAmounts: { alex: "2.50", blair: "7.50" },
+      }).shares,
+    ).toEqual([
+      { memberId: "alex", amountCents: 250 },
+      { memberId: "blair", amountCents: 750 },
+    ]);
+
+    expect(() =>
+      createExpense({
+        amount: "10.00",
+        description: "Lunch",
+        category: "food",
+        date: "2026-10-30",
+        paidBy: "alex",
+        sharedBy: ["alex", "blair"],
+        splitType: "exact",
+        exactAmounts: { alex: "2.50", blair: "7.00" },
+      }),
+    ).toThrow("difference: 50 cents");
+  });
+
   it("rejects malformed amounts and incomplete exact splits", () => {
     expect(() =>
       createExpense({
