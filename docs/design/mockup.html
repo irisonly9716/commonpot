@@ -1,0 +1,218 @@
+<!doctype html>
+<!--
+  Placeholder mockups for CommonPot (issue #5), phone width 390 px.
+  Open mockup.html#home, #add or #exact to see each screen; the PNGs next to this file are renders of those states.
+  Replace with the final mockups and DESIGN.md when #5 is done.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CommonPot mockups</title>
+<style>
+  :root {
+    --paper: #f6f4ef;
+    --surface: #ffffff;
+    --ink: #1f2a37;
+    --muted: #5d6673;
+    --line: #dedad2;
+    --primary: #0f5c5a;
+    --primary-soft: #e3efed;
+    --accent: #b5481c;
+    --owed: #0f5c5a;
+    --owes: #9b2c2c;
+    --warn: #8a5a00;
+    --radius: 6px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink);
+    font: 15px/1.4 "Segoe UI", system-ui, sans-serif; }
+  .screen { display: none; width: 390px; min-height: 844px; position: relative; padding-bottom: 72px; }
+  .screen:target, body:not(:has(.screen:target)) #home { display: block; }
+
+  header { padding: 18px 20px 12px; border-bottom: 1px solid var(--line); background: var(--surface); }
+  .eyebrow { font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+  h1 { font-size: 20px; margin: 2px 0 0; font-weight: 650; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .members { display: flex; gap: 4px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 12px; font-weight: 600; background: var(--primary-soft); color: var(--primary); }
+
+  section { padding: 16px 20px; border-bottom: 1px solid var(--line); background: var(--surface); margin-top: 10px; }
+  h2 { font-size: 13px; color: var(--muted); font-weight: 600; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .04em; }
+
+  .headline { font-size: 26px; font-weight: 650; margin: 0; }
+  .headline .sign { color: var(--owed); }
+  .sub { color: var(--muted); font-size: 13px; margin: 2px 0 12px; }
+  .balance { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .owed { color: var(--owed); font-weight: 600; }
+  .owes { color: var(--owes); font-weight: 600; }
+  .link { color: var(--primary); font-weight: 600; font-size: 14px; text-decoration: none; }
+
+  .budget { margin: 10px 0; }
+  .bar { height: 8px; background: #ece9e2; border-radius: 4px; overflow: hidden; margin: 5px 0 3px; }
+  .bar > span { display: block; height: 100%; background: var(--primary); }
+  .bar.warn > span { background: var(--warn); }
+  .small { font-size: 12.5px; color: var(--muted); }
+  .flag { color: var(--warn); font-weight: 600; }
+
+  .feed { list-style: none; margin: 0; padding: 0; }
+  .feed li { display: flex; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .feed li:first-child { border-top: 0; }
+  .when { color: var(--muted); font-size: 12px; }
+
+  .fab { position: absolute; right: 20px; bottom: 86px; background: var(--accent); color: #fff; border: 0;
+    border-radius: var(--radius); padding: 12px 18px; font: 600 15px "Segoe UI", sans-serif; }
+  nav { position: absolute; bottom: 0; left: 0; right: 0; height: 64px; background: var(--surface);
+    border-top: 1px solid var(--line); display: flex; }
+  nav a { flex: 1; display: grid; place-items: center; font-size: 12px; color: var(--muted); text-decoration: none; }
+  nav a.on { color: var(--primary); font-weight: 650; }
+
+  /* add expense */
+  .top { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .top h1 { font-size: 18px; }
+  .back { color: var(--primary); font-weight: 600; text-decoration: none; }
+  form { padding: 4px 20px 0; }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 5px; }
+  .field { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; font-size: 15px; }
+  .amount { font-size: 28px; font-weight: 650; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .seg { display: flex; border: 1px solid var(--primary); border-radius: var(--radius); overflow: hidden; }
+  .seg span { flex: 1; text-align: center; padding: 8px 0; font-size: 14px; font-weight: 600; color: var(--primary); }
+  .seg span.on { background: var(--primary); color: #fff; }
+  .share { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--line); font-size: 15px; }
+  .share:first-child { border-top: 0; }
+  .check { width: 18px; height: 18px; border: 2px solid var(--primary); border-radius: 3px; display: inline-grid;
+    place-items: center; margin-right: 8px; vertical-align: -3px; background: var(--primary); color: #fff; font-size: 12px; }
+  .mini { width: 92px; text-align: right; padding: 6px 8px; }
+  .note { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+  .error { color: var(--owes); font-size: 13px; margin-top: 6px; font-weight: 600; }
+  .field.invalid { border-color: var(--owes); }
+  .save { display: block; width: 100%; margin: 22px 0 0; padding: 13px; border: 0; border-radius: var(--radius);
+    background: var(--accent); color: #fff; font: 600 16px "Segoe UI", sans-serif; }
+  .save:disabled { background: #c9c4ba; color: #6f6a61; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 12px; }
+</style>
+</head>
+<body>
+
+<!-- Screen 1: group home -->
+<div class="screen" id="home">
+  <header>
+    <div class="row">
+      <div>
+        <div class="eyebrow">Shared account</div>
+        <h1>Maple St. Apartment</h1>
+      </div>
+      <div class="members" aria-label="4 members">
+        <span class="avatar">You</span><span class="avatar">J</span><span class="avatar">S</span><span class="avatar">M</span>
+      </div>
+    </div>
+  </header>
+
+  <section aria-labelledby="bal">
+    <h2 id="bal">Your balance</h2>
+    <p class="headline">You are owed <span class="sign">+$42.50</span></p>
+    <p class="sub">October · across 23 expenses</p>
+    <div class="balance"><span>Jay owes you</span><span class="owed">+$28.00</span></div>
+    <div class="balance"><span>Sam owes you</span><span class="owed">+$14.50</span></div>
+    <div class="balance"><span>Mia is settled up</span><span class="small">$0.00</span></div>
+    <div class="row" style="margin-top:8px"><span class="small">Balances add up to $0.00</span><a class="link" href="#">Settle up</a></div>
+  </section>
+
+  <section aria-labelledby="bud">
+    <h2 id="bud">Budgets this month</h2>
+    <div class="budget">
+      <div class="row"><strong>Groceries</strong><span class="small">$312 of $400</span></div>
+      <div class="bar warn" role="img" aria-label="78 percent used"><span style="width:78%"></span></div>
+      <div class="small"><span class="flag">78% used</span> · $88 left · alert at 80%</div>
+    </div>
+    <div class="budget">
+      <div class="row"><strong>Utilities</strong><span class="small">$96 of $180</span></div>
+      <div class="bar" role="img" aria-label="53 percent used"><span style="width:53%"></span></div>
+      <div class="small">53% used · $84 left</div>
+    </div>
+  </section>
+
+  <section aria-labelledby="act">
+    <div class="row"><h2 id="act">Activity</h2><span class="small">Live</span></div>
+    <ul class="feed">
+      <li><span>Jay added <strong>Groceries</strong> · $84.20</span><span class="when">2m</span></li>
+      <li><span>You recorded a payment to Sam · $40.00</span><span class="when">1h</span></li>
+    </ul>
+  </section>
+
+  <button class="fab">+ Add expense</button>
+  <nav><a class="on" href="#home">Home</a><a href="#">Expenses</a><a href="#">Insights</a><a href="#">My spending</a></nav>
+</div>
+
+<!-- Screen 2: add expense, equal split -->
+<div class="screen" id="add">
+  <div class="top"><a class="back" href="#home">Cancel</a><h1>Add expense</h1></div>
+  <form>
+    <label for="amt">Amount</label>
+    <div class="field amount" id="amt">$84.20</div>
+
+    <label for="desc">Description</label>
+    <div class="field" id="desc">Trader Joe's run</div>
+
+    <div class="grid2">
+      <div><label for="cat">Category</label><div class="field" id="cat">Groceries ▾</div></div>
+      <div><label for="date">Date</label><div class="field" id="date">Oct 30, 2026</div></div>
+    </div>
+
+    <label for="paid">Paid by</label>
+    <div class="field" id="paid">You ▾</div>
+
+    <label>Split</label>
+    <div class="seg" role="radiogroup"><span class="on" role="radio" aria-checked="true">Equally</span><span role="radio" aria-checked="false">Exact amounts</span></div>
+
+    <label>Shared by</label>
+    <div class="card">
+      <div class="share"><span><span class="check">✓</span>You</span><span>$21.05</span></div>
+      <div class="share"><span><span class="check">✓</span>Jay</span><span>$21.05</span></div>
+      <div class="share"><span><span class="check">✓</span>Sam</span><span>$21.05</span></div>
+      <div class="share"><span><span class="check">✓</span>Mia</span><span>$21.05</span></div>
+    </div>
+    <p class="note">Each share is $21.05. Any leftover cents go to members one at a time, so shares always add up to the total.</p>
+
+    <button class="save" type="button">Save expense</button>
+  </form>
+</div>
+
+<!-- Screen 3: add expense, exact split that doesn't add up -->
+<div class="screen" id="exact">
+  <div class="top"><a class="back" href="#home">Cancel</a><h1>Add expense</h1></div>
+  <form>
+    <label for="amt2">Amount</label>
+    <div class="field amount" id="amt2">$120.00</div>
+
+    <label for="desc2">Description</label>
+    <div class="field" id="desc2">Internet + electricity</div>
+
+    <div class="grid2">
+      <div><label for="cat2">Category</label><div class="field" id="cat2">Utilities ▾</div></div>
+      <div><label for="date2">Date</label><div class="field" id="date2">Oct 30, 2026</div></div>
+    </div>
+
+    <label for="paid2">Paid by</label>
+    <div class="field" id="paid2">Mia ▾</div>
+
+    <label>Split</label>
+    <div class="seg" role="radiogroup"><span role="radio" aria-checked="false">Equally</span><span class="on" role="radio" aria-checked="true">Exact amounts</span></div>
+
+    <label>Shared by</label>
+    <div class="card">
+      <div class="share"><span><span class="check">✓</span>You</span><span class="field mini">$40.00</span></div>
+      <div class="share"><span><span class="check">✓</span>Jay</span><span class="field mini">$40.00</span></div>
+      <div class="share"><span><span class="check">✓</span>Sam</span><span class="field mini invalid">$36.00</span></div>
+      <div class="share"><span style="color:var(--muted)"><span class="check" style="background:#fff;color:#fff">✓</span>Mia</span><span class="small">not sharing</span></div>
+    </div>
+    <p class="error" role="alert">$4.00 left to assign. Exact amounts must add up to $120.00.</p>
+
+    <button class="save" type="button" disabled>Save expense</button>
+  </form>
+</div>
+
+</body>
+</html>
