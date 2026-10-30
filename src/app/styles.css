@@ -1,0 +1,187 @@
+:root {
+  color-scheme: light;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: #17241d;
+  background: #f4f7f4;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.page-shell {
+  width: min(100% - 2rem, 960px);
+  margin: 0 auto;
+  padding: 3rem 0;
+}
+
+.panel {
+  padding: 2rem;
+  border: 1px solid #dce5dd;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(23 36 29 / 5%);
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  color: #39704e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  margin: 0 0 1rem;
+}
+
+.expense-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.expense-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field label,
+.field legend {
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #bdcabe;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.field input:focus,
+.field select:focus,
+button:focus-visible {
+  outline: 3px solid #9ed2ad;
+  outline-offset: 2px;
+}
+
+.member-list,
+.radio-list {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0;
+  border: 0;
+}
+
+.member-row,
+.radio-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.member-row input,
+.radio-row input {
+  width: 1rem;
+  min-height: auto;
+  accent-color: #39704e;
+}
+
+.amount-hint,
+.muted {
+  color: #59665d;
+  font-size: 0.9rem;
+}
+
+.primary-button {
+  min-height: 2.8rem;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 0.55rem;
+  color: #fff;
+  background: #27623e;
+  font-weight: 700;
+}
+
+.primary-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.error-message {
+  color: #a4262c;
+}
+
+.success-message {
+  color: #27623e;
+}
+
+.expense-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.expense-card {
+  padding: 1rem;
+  border: 1px solid #e1e9e2;
+  border-radius: 0.7rem;
+}
+
+.expense-card h3 {
+  margin: 0 0 0.25rem;
+}
+
+.expense-card p {
+  margin: 0.25rem 0;
+}
+
+.share-list {
+  margin: 0.6rem 0 0;
+  padding-left: 1.2rem;
+  color: #59665d;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+  .page-shell {
+    padding: 1rem 0;
+  }
+
+  .panel {
+    padding: 1.25rem;
+  }
+
+  .expense-layout {
+    grid-template-columns: 1fr;
+  }
+}
