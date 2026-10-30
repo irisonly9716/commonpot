@@ -1,0 +1,13 @@
+{
+  "name": "commonpot",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.0",
+    "vitest": "^5.0.0"
+  }
+}
