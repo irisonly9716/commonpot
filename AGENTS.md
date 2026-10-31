@@ -12,6 +12,7 @@
 - Start every reply with 🪙.
 - Read the GitHub issue you are working on and the user story it links to in `docs/PRD.md`. Restate its acceptance criteria before writing code.
 - For changes that touch more than one file, show a plan first and wait for approval.
+- Implement every acceptance criterion in the issue. If one is out of scope for this change, list it in your reply; never drop it silently.
 
 ## 1. Project context
 
@@ -83,7 +84,7 @@ docs/                  PRD.md, design/, api/openapi.yaml, architecture.md, decis
 Key patterns:
 - **Route handler shape:** validate input with Zod → get the user from the session or the `Authorization: Bearer` token → check permission → call `lib/data` and `lib/domain` → return JSON. Errors go through one helper and always look like `{ "error": { "code": "...", "message": "..." } }` with the right status (400, 401, 403, 404, 409, 422).
 - **One write path:** UI mutations call `/api/v1` (no Server Actions), so permissions are checked in one place. Server Components may read through `lib/data` with the user's Supabase client, so RLS still applies.
-- **Money:** integer cents everywhere (`amountCents`). Format only for display with `formatMoney(cents, currency)` (`Intl.NumberFormat`).
+- **Money:** integer cents everywhere (`amountCents`). Format only for display with `formatMoney(cents, currency)` (`Intl.NumberFormat`); messages shown to users never contain raw cents.
 - **Derived numbers:** balances, budget progress and personal totals are calculated by `lib/domain` from expenses and payments, never stored or edited by hand.
 - **Real time:** client components subscribe to a group through one hook, `useGroupRealtime(groupId)`, update state from events, show "Reconnecting…" while disconnected, and unsubscribe on unmount.
 
@@ -114,6 +115,7 @@ Key patterns:
 - **PRD:** [docs/PRD.md](docs/PRD.md) has US1–US13 with acceptance criteria, the roles and the out-of-scope list. The acceptance criteria are the spec: build what they say and nothing from the out-of-scope list.
 - **Design system:** UI work follows [DESIGN.md](DESIGN.md) (colors, type, spacing, components). Use its tokens through the Tailwind theme; never hard-code colors or font sizes.
 - **Mockups:** `docs/design/`, one image per screen. They are the source of truth for layout. If a mockup and the PRD disagree, follow the PRD and point out the difference.
+  - Placeholders until #5: `group-home.png` (balance first, then budgets, live feed, Add expense button), `add-expense-equal.png` (shares listed per member), `add-expense-exact.png` (amount left shown live, Save disabled until it is $0.00). Source: `mockup.html`.
 - **Avoid the generic AI look:** no colored side stripes on cards, no rows of three identical cards, no oversized rounded corners, no gradients that DESIGN.md doesn't define.
 - **Mobile first:** one column on phones, two columns from 1024 px.
 
@@ -162,6 +164,7 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 
 **Do**
 - Reuse `lib/domain` functions and the shared Zod schemas instead of re-implementing logic in components or routes.
+- Validate input with the Zod schemas in `lib/validation` (forms, routes and domain entry points), not hand-written regex checks.
 - Use Server Components by default; add `"use client"` only for forms, charts, real time and other interactivity.
 - Handle loading, empty and error states on every screen.
 - Before adding any dependency: check its latest stable version (`npm view <pkg> version` and its docs) and that it works with our versions, explain why we need it, and wait for approval. Then run `npm audit`.
@@ -190,3 +193,4 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 
 <!-- Each change to this file goes through a PR approved by both partners and adds a line here. -->
 - v1 · 2026-10-30 · Arianna · First draft, based on PRD v0.2.
+- v2 · 2026-10-30 · Arianna · After the before/after test on #8: cover every acceptance criterion, Zod for all validation, no raw cents in messages, describe the placeholder mockups (#20).
