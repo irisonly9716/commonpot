@@ -21,6 +21,12 @@ values
     '33333333-3333-4333-8333-333333333333', 'authenticated', 'authenticated',
     'site-admin@example.com', crypt('password123', gen_salt('bf')), now(), '{}', '{}',
     '', '', '', '', now(), now()
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '55555555-5555-4555-8555-555555555555', 'authenticated', 'authenticated',
+    'other-member@example.com', crypt('password123', gen_salt('bf')), now(), '{}', '{}',
+    '', '', '', '', now(), now()
   );
 
 update public.profiles
@@ -34,6 +40,10 @@ where id = '22222222-2222-4222-8222-222222222222';
 update public.profiles
 set display_name = 'Site Admin', is_site_admin = true
 where id = '33333333-3333-4333-8333-333333333333';
+
+update public.profiles
+set display_name = 'Other Member'
+where id = '55555555-5555-4555-8555-555555555555';
 
 insert into public.default_categories (name)
 values ('Groceries'), ('Utilities'), ('Dining');
@@ -103,4 +113,39 @@ values (
   2500,
   'Personal expense',
   date '2026-11-01'
+);
+
+insert into public.groups (id, name, currency, created_by)
+values (
+  '99999999-9999-4999-8999-999999999999',
+  'Other household',
+  'USD',
+  '33333333-3333-4333-8333-333333333333'
+);
+
+insert into public.group_members (group_id, user_id, role)
+values (
+  '99999999-9999-4999-8999-999999999999',
+  '55555555-5555-4555-8555-555555555555',
+  'member'
+);
+
+insert into public.expenses (
+  id, group_id, created_by, paid_by, amount_cents, description, expense_date
+)
+values (
+  '66666666-6666-4666-8666-666666666666',
+  '99999999-9999-4999-8999-999999999999',
+  '55555555-5555-4555-8555-555555555555',
+  '55555555-5555-4555-8555-555555555555',
+  1200,
+  'Other groceries',
+  date '2026-11-01'
+);
+
+insert into public.expense_shares (expense_id, user_id, amount_cents)
+values (
+  '66666666-6666-4666-8666-666666666666',
+  '55555555-5555-4555-8555-555555555555',
+  1200
 );

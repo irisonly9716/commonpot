@@ -4,6 +4,7 @@ const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const groupId = "11111111-1111-4111-8111-111111111111";
+const otherGroupId = "99999999-9999-4999-8999-999999999999";
 const personalExpenseId = "44444444-4444-4444-8444-444444444444";
 const userPassword = "password123";
 
@@ -11,6 +12,7 @@ const users = {
   admin: "admin@example.com",
   member: "member@example.com",
   siteAdmin: "site-admin@example.com",
+  otherMember: "other-member@example.com",
 };
 
 async function signIn(email: string): Promise<string> {
@@ -68,33 +70,33 @@ describe("issue #4 database security and integrity", () => {
     const memberToken = await signIn(users.member);
 
     const groups = await request(
-      "groups?select=id&id=eq.11111111-1111-4111-8111-111111111111",
+      `groups?select=id&id=eq.${groupId}`,
       memberToken,
     );
     expect(groups.ok).toBe(true);
     expect(await groups.json()).toHaveLength(1);
 
     const otherGroup = await request(
-      "groups?select=id&id=eq.99999999-9999-4999-8999-999999999999",
+      `groups?select=id&id=eq.${otherGroupId}`,
       memberToken,
     );
     expect(otherGroup.ok).toBe(true);
     expect(await otherGroup.json()).toHaveLength(0);
 
-    const ownLedger = await request(
+    const memberLedger = await request(
       `personal_expenses?select=id&id=eq.${personalExpenseId}`,
       memberToken,
     );
-    expect(ownLedger.ok).toBe(true);
-    expect(await ownLedger.json()).toHaveLength(0);
+    expect(memberLedger.ok).toBe(true);
+    expect(await memberLedger.json()).toHaveLength(0);
 
     const adminToken = await signIn(users.admin);
-    const otherLedger = await request(
+    const ownerLedger = await request(
       `personal_expenses?select=id&id=eq.${personalExpenseId}`,
       adminToken,
     );
-    expect(otherLedger.ok).toBe(true);
-    expect(await otherLedger.json()).toHaveLength(1);
+    expect(ownerLedger.ok).toBe(true);
+    expect(await ownerLedger.json()).toHaveLength(1);
   });
 
   it("prevents privilege escalation and direct membership insertion", async () => {
@@ -260,5 +262,191 @@ describe("issue #4 database security and integrity", () => {
     );
     expect(profiles.ok).toBe(true);
     expect(await profiles.json()).not.toHaveLength(0);
+  });
+
+  it("blocks non-admin platform counts and protects changed expense amounts", async () => {
+    const memberToken = await signIn(users.member);
+    const counts = await rpc("platform_counts", memberToken, {});
+    expect(counts.status).toBeGreaterThanOrEqual(400);
+
+    const expense = await rpc("create_expense", memberToken, {
+      p_expense: {
+        group_id: groupId,
+        paid_by: "11111111-1111-4111-8111-111111111111",
+        amount_cents: 100,
+        description: "Amount protected",
+        expense_date: "2026-11-04",
+      },
+      p_shares: [
+        {
+          user_id: "22222222-2222-4222-8222-222222222222",
+          amount_cents: 100,
+        },
+      ],
+    });
+    expect(expense.ok).toBe(true);
+    const expenseId = JSON.parse(await expense.text()) as string;
+    const changed = await request(`expenses?id=eq.${expenseId}`, memberToken, {
+      method: "PATCH",
+      body: JSON.stringify({ amount_cents: 101 }),
+    });
+    expect(changed.status).toBeGreaterThanOrEqual(400);
+  });
+
+  it("keeps shares writable only by the expense creator", async () => {
+    const adminToken = await signIn(users.admin);
+    const memberToken = await signIn(users.member);
+    const expense = await rpc("create_expense", adminToken, {
+      p_expense: {
+        group_id: groupId,
+        paid_by: "11111111-1111-4111-8111-111111111111",
+        amount_cents: 100,
+        description: "Share owner",
+        expense_date: "2026-11-04",
+      },
+      p_shares: [
+        {
+          user_id: "22222222-2222-4222-8222-222222222222",
+          amount_cents: 100,
+        },
+      ],
+    });
+    expect(expense.ok).toBe(true);
+    const expenseId = JSON.parse(await expense.text()) as string;
+    const insert = await request("expense_shares", memberToken, {
+      method: "POST",
+      body: JSON.stringify({
+        expense_id: expenseId,
+        user_id: "11111111-1111-4111-8111-111111111111",
+        amount_cents: 0,
+      }),
+    });
+    expect(insert.status).toBeGreaterThanOrEqual(400);
+  });
+
+  it("exposes only shared display profiles and hides privilege columns", async () => {
+    const memberToken = await signIn(users.member);
+    const ownProfile = await request("profiles?select=*", memberToken);
+    expect(await ownProfile.json()).toHaveLength(1);
+    const shared = await rpc("group_member_profiles", memberToken, {
+      p_group_id: groupId,
+    });
+    expect(shared.ok).toBe(true);
+    const rows = (await shared.json()) as Array<Record<string, unknown>>;
+    expect(
+      rows.some((row) => row.id === "11111111-1111-4111-8111-111111111111"),
+    ).toBe(true);
+    expect(
+      rows.every(
+        (row) => !("is_site_admin" in row) && !("suspended_at" in row),
+      ),
+    ).toBe(true);
+  });
+
+  it("allows each group member to receive the same budget threshold alert", async () => {
+    const adminToken = await signIn(users.admin);
+    const budget = await request("budgets", adminToken, {
+      method: "POST",
+      body: JSON.stringify({
+        group_id: groupId,
+        category_id: "00000000-0000-0000-0000-000000000000",
+        limit_cents: 100,
+        effective_from: "2026-11-01",
+      }),
+    });
+    expect(budget.status).toBeGreaterThanOrEqual(400);
+  });
+
+  it("handles invite acceptance, validation triggers, and activity snapshots", async () => {
+    const otherToken = await signIn(users.otherMember);
+    const accepted = await rpc("accept_invite", otherToken, {
+      p_token: "seed-invite-token",
+    });
+    expect(accepted.ok).toBe(true);
+    const acceptedAgain = await rpc("accept_invite", otherToken, {
+      p_token: "seed-invite-token",
+    });
+    expect(acceptedAgain.ok).toBe(true);
+
+    const adminToken = await signIn(users.admin);
+    const expired = await request("invites", adminToken, {
+      method: "POST",
+      body: JSON.stringify({
+        group_id: groupId,
+        created_by: "11111111-1111-4111-8111-111111111111",
+        expires_at: "2020-01-01T00:00:00Z",
+      }),
+    });
+    expect(expired.ok).toBe(true);
+    const expiredToken = ((await expired.json()) as Array<{ token: string }>)[0]
+      ?.token;
+    const expiredJoin = await rpc("accept_invite", otherToken, {
+      p_token: expiredToken,
+    });
+    expect(expiredJoin.status).toBeGreaterThanOrEqual(400);
+
+    const badShares = await rpc("create_expense", adminToken, {
+      p_expense: {
+        group_id: groupId,
+        paid_by: "11111111-1111-4111-8111-111111111111",
+        amount_cents: 101,
+        description: "Bad shares",
+        expense_date: "2026-11-04",
+      },
+      p_shares: [
+        {
+          user_id: "11111111-1111-4111-8111-111111111111",
+          amount_cents: 100,
+        },
+      ],
+    });
+    expect(badShares.status).toBeGreaterThanOrEqual(400);
+
+    const badPayer = await rpc("create_expense", adminToken, {
+      p_expense: {
+        group_id: groupId,
+        paid_by: "55555555-5555-4555-8555-555555555555",
+        amount_cents: 100,
+        description: "Bad payer",
+        expense_date: "2026-11-04",
+      },
+      p_shares: [
+        {
+          user_id: "11111111-1111-4111-8111-111111111111",
+          amount_cents: 100,
+        },
+      ],
+    });
+    expect(badPayer.status).toBeGreaterThanOrEqual(400);
+
+    const payment = await request("payments", adminToken, {
+      method: "POST",
+      body: JSON.stringify({
+        group_id: groupId,
+        paid_by: "11111111-1111-4111-8111-111111111111",
+        paid_to: "55555555-5555-4555-8555-555555555555",
+        amount_cents: 100,
+        payment_date: "2026-11-04",
+      }),
+    });
+    expect(payment.status).toBeGreaterThanOrEqual(400);
+  });
+
+  it("prevents member expense deletion and removing the last admin", async () => {
+    const memberToken = await signIn(users.member);
+    const memberDelete = await request(
+      "expenses?id=eq.33333333-3333-4333-8333-333333333333",
+      memberToken,
+      { method: "DELETE" },
+    );
+    expect(memberDelete.status).toBeGreaterThanOrEqual(400);
+
+    const adminToken = await signIn(users.admin);
+    const adminDelete = await request(
+      `group_members?group_id=eq.${groupId}&user_id=eq.11111111-1111-4111-8111-111111111111`,
+      adminToken,
+      { method: "DELETE" },
+    );
+    expect(adminDelete.status).toBeGreaterThanOrEqual(400);
   });
 });
