@@ -106,7 +106,7 @@ create table public.alerts (
   alert_month date,
   read_at timestamptz,
   created_at timestamptz not null default now(),
-  unique (budget_id, alert_month, threshold_percent)
+  unique (user_id, budget_id, alert_month, threshold_percent)
 );
 
 create table public.activity (
@@ -299,15 +299,21 @@ language plpgsql
 set search_path = ''
 as $$
 declare
+  target_expense_id uuid;
   expected bigint;
   actual bigint;
 begin
-  select amount_cents into expected from public.expenses where id = coalesce(new.expense_id, old.expense_id);
+  if tg_table_name = 'expenses' then
+    target_expense_id := coalesce(new.id, old.id);
+  else
+    target_expense_id := coalesce(new.expense_id, old.expense_id);
+  end if;
+  select amount_cents into expected from public.expenses where id = target_expense_id;
   if expected is null then
     return null;
   end if;
   select coalesce(sum(amount_cents), 0) into actual
-  from public.expense_shares where expense_id = coalesce(new.expense_id, old.expense_id);
+  from public.expense_shares where expense_id = target_expense_id;
   if actual <> expected then
     raise exception 'expense shares must equal expense amount';
   end if;
@@ -317,6 +323,11 @@ $$;
 
 create constraint trigger expense_shares_total
   after insert or update or delete on public.expense_shares
+  deferrable initially deferred
+  for each row execute function public.check_expense_shares();
+
+create constraint trigger expense_amount_matches_shares
+  after update of amount_cents on public.expenses
   deferrable initially deferred
   for each row execute function public.check_expense_shares();
 
@@ -363,6 +374,26 @@ $$;
 create trigger validate_payment_relationships
   before insert or update on public.payments
   for each row execute function public.validate_payment_relationships();
+
+create or replace function public.validate_budget_category()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if not exists (
+    select 1 from public.categories
+    where id = new.category_id and group_id = new.group_id
+  ) then
+    raise exception 'budget category must belong to budget group';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger validate_budget_category
+  before insert or update on public.budgets
+  for each row execute function public.validate_budget_category();
 
 create or replace function public.ensure_group_admin()
 returns trigger
@@ -416,13 +447,16 @@ set search_path = ''
 as $$
 declare
   actor uuid := (select auth.uid());
+  actor_name text;
 begin
+  select display_name into actor_name from public.profiles where id = actor;
   insert into public.activity (group_id, actor_id, action, description, amount_cents)
   values (old.group_id, actor, 'deleted', old.description, old.amount_cents);
-  if actor is distinct from old.created_by then
+  if actor is not null and actor is distinct from old.created_by then
     insert into public.alerts (user_id, group_id, kind, message)
     values (old.created_by, old.group_id, 'expense_deleted',
-      'An administrator deleted your expense: ' || old.description);
+      coalesce(actor_name, 'A group administrator') || ' deleted your expense: ' ||
+      old.description);
   end if;
   return old;
 end;
@@ -462,10 +496,16 @@ language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  payer_name text;
+  payee_name text;
 begin
+  select display_name into payer_name from public.profiles where id = new.paid_by;
+  select display_name into payee_name from public.profiles where id = new.paid_to;
   insert into public.activity (group_id, actor_id, action, description, amount_cents)
   values (new.group_id, (select auth.uid()), 'payment_recorded',
-    'Payment recorded', new.amount_cents);
+    coalesce(payer_name, 'A member') || ' paid ' || coalesce(payee_name, 'a member'),
+    new.amount_cents);
   return new;
 end;
 $$;
@@ -545,14 +585,33 @@ $$;
 
 create or replace function public.platform_counts()
 returns table (user_count bigint, group_count bigint, expense_count bigint)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not public.is_site_admin() then
+    raise exception 'site admin access required';
+  end if;
+  select
+    count(*) from public.profiles into user_count;
+  select count(*) from public.groups into group_count;
+  select count(*) from public.expenses into expense_count;
+  return next;
+end;
+$$;
+
+create or replace function public.group_member_profiles(p_group_id uuid)
+returns table (id uuid, display_name text)
 language sql
 security definer
 set search_path = ''
 as $$
-  select
-    (select count(*) from public.profiles),
-    (select count(*) from public.groups),
-    (select count(*) from public.expenses);
+  select p.id, p.display_name
+  from public.profiles p
+  join public.group_members gm on gm.user_id = p.id
+  where gm.group_id = p_group_id
+    and public.is_group_member(p_group_id);
 $$;
 
 alter table public.profiles enable row level security;
@@ -581,9 +640,6 @@ create policy groups_insert on public.groups for insert
   with check (created_by = (select auth.uid()));
 create policy groups_update on public.groups for update
   using (public.is_group_admin(id)) with check (public.is_group_admin(id));
-create policy groups_delete on public.groups for delete
-  using (public.is_group_admin(id));
-
 create policy group_members_select on public.group_members for select
   using (public.is_group_member(group_id));
 create policy group_members_update on public.group_members for update
@@ -620,7 +676,7 @@ create policy invites_admin_delete on public.invites for delete
   using (public.is_group_admin(group_id));
 
 create policy expenses_member_select on public.expenses for select
-  using (public.is_group_member(group_id));
+  using (public.is_group_member(group_id) and not public.is_site_admin());
 create policy expenses_member_insert on public.expenses for insert
   with check (public.is_group_member(group_id) and created_by = (select auth.uid()));
 create policy expenses_creator_update on public.expenses for update
@@ -630,17 +686,17 @@ create policy expenses_creator_delete on public.expenses for delete
   using (created_by = (select auth.uid()) or public.is_group_admin(group_id));
 
 create policy shares_member_select on public.expense_shares for select
-  using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id)));
+  using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id) and not public.is_site_admin()));
 create policy shares_member_insert on public.expense_shares for insert
-  with check (exists (select 1 from public.expenses e where e.id = expense_id and (e.created_by = (select auth.uid()) or public.is_group_admin(e.group_id))));
+  with check (exists (select 1 from public.expenses e where e.id = expense_id and e.created_by = (select auth.uid())));
 create policy shares_creator_update on public.expense_shares for update
-  using (exists (select 1 from public.expenses e where e.id = expense_id and (e.created_by = (select auth.uid()) or public.is_group_admin(e.group_id))))
-  with check (exists (select 1 from public.expenses e where e.id = expense_id and (e.created_by = (select auth.uid()) or public.is_group_admin(e.group_id))));
+  using (exists (select 1 from public.expenses e where e.id = expense_id and e.created_by = (select auth.uid())))
+  with check (exists (select 1 from public.expenses e where e.id = expense_id and e.created_by = (select auth.uid())));
 create policy shares_creator_delete on public.expense_shares for delete
-  using (exists (select 1 from public.expenses e where e.id = expense_id and (e.created_by = (select auth.uid()) or public.is_group_admin(e.group_id))));
+  using (exists (select 1 from public.expenses e where e.id = expense_id and e.created_by = (select auth.uid())));
 
 create policy payments_member_select on public.payments for select
-  using (public.is_group_member(group_id));
+  using (public.is_group_member(group_id) and not public.is_site_admin());
 create policy payments_member_insert on public.payments for insert
   with check (public.is_group_member(group_id) and (paid_by = (select auth.uid()) or public.is_group_admin(group_id)));
 create policy payments_member_update on public.payments for update
@@ -649,7 +705,7 @@ create policy payments_member_delete on public.payments for delete
   using (paid_by = (select auth.uid()) or public.is_group_admin(group_id));
 
 create policy budgets_member_select on public.budgets for select
-  using (public.is_group_member(group_id));
+  using (public.is_group_member(group_id) and not public.is_site_admin());
 create policy budgets_admin_insert on public.budgets for insert
   with check (public.is_group_admin(group_id));
 create policy budgets_admin_update on public.budgets for update
@@ -658,16 +714,16 @@ create policy budgets_admin_delete on public.budgets for delete
   using (public.is_group_admin(group_id));
 
 create policy alerts_owner_select on public.alerts for select
-  using (user_id = (select auth.uid()));
+  using (user_id = (select auth.uid()) and not public.is_site_admin());
 create policy alerts_owner_update on public.alerts for update
   using (user_id = (select auth.uid()))
   with check (user_id = (select auth.uid()));
 
 create policy activity_member_select on public.activity for select
-  using (public.is_group_member(group_id));
+  using (public.is_group_member(group_id) and not public.is_site_admin());
 
 create policy personal_expenses_owner_select on public.personal_expenses for select
-  using (user_id = (select auth.uid()));
+  using (user_id = (select auth.uid()) and not public.is_site_admin());
 create policy personal_expenses_owner_insert on public.personal_expenses for insert
   with check (user_id = (select auth.uid()));
 create policy personal_expenses_owner_update on public.personal_expenses for update
@@ -677,7 +733,9 @@ create policy personal_expenses_owner_delete on public.personal_expenses for del
   using (user_id = (select auth.uid()));
 
 revoke all on function public.platform_counts() from public;
+revoke execute on function public.platform_counts() from anon;
 grant execute on function public.platform_counts() to authenticated;
 grant execute on function public.accept_invite(text) to authenticated;
 grant execute on function public.create_expense(jsonb, jsonb) to authenticated;
 grant execute on function public.update_expense(uuid, jsonb, jsonb) to authenticated;
+grant execute on function public.group_member_profiles(uuid) to authenticated;

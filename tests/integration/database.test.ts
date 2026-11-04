@@ -44,6 +44,7 @@ async function request(
       apikey: anonKey,
       Authorization: `Bearer ${token}`,
       "content-type": "application/json",
+      Prefer: "return=representation",
       ...init.headers,
     },
   });
@@ -60,6 +61,7 @@ async function rpc(
       apikey: anonKey,
       Authorization: `Bearer ${token}`,
       "content-type": "application/json",
+      Prefer: "return=representation",
     },
     body: JSON.stringify(body),
   });
@@ -296,7 +298,7 @@ describe("issue #4 database security and integrity", () => {
   it("keeps shares writable only by the expense creator", async () => {
     const adminToken = await signIn(users.admin);
     const memberToken = await signIn(users.member);
-    const expense = await rpc("create_expense", adminToken, {
+    const expense = await rpc("create_expense", memberToken, {
       p_expense: {
         group_id: groupId,
         paid_by: "11111111-1111-4111-8111-111111111111",
@@ -313,7 +315,7 @@ describe("issue #4 database security and integrity", () => {
     });
     expect(expense.ok).toBe(true);
     const expenseId = JSON.parse(await expense.text()) as string;
-    const insert = await request("expense_shares", memberToken, {
+    const insert = await request("expense_shares", adminToken, {
       method: "POST",
       body: JSON.stringify({
         expense_id: expenseId,
@@ -385,6 +387,32 @@ describe("issue #4 database security and integrity", () => {
     });
     expect(expiredJoin.status).toBeGreaterThanOrEqual(400);
 
+    const revoked = await request("invites", adminToken, {
+      method: "POST",
+      body: JSON.stringify({
+        group_id: groupId,
+        created_by: "11111111-1111-4111-8111-111111111111",
+      }),
+    });
+    expect(revoked.ok).toBe(true);
+    const revokedRows = (await revoked.json()) as Array<{
+      token: string;
+      id: string;
+    }>;
+    const revokedInvite = await request(
+      `invites?id=eq.${revokedRows[0]?.id}`,
+      adminToken,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ revoked_at: "2026-11-04T00:00:00Z" }),
+      },
+    );
+    expect(revokedInvite.ok).toBe(true);
+    const revokedJoin = await rpc("accept_invite", otherToken, {
+      p_token: revokedRows[0]?.token,
+    });
+    expect(revokedJoin.status).toBeGreaterThanOrEqual(400);
+
     const badShares = await rpc("create_expense", adminToken, {
       p_expense: {
         group_id: groupId,
@@ -405,7 +433,7 @@ describe("issue #4 database security and integrity", () => {
     const badPayer = await rpc("create_expense", adminToken, {
       p_expense: {
         group_id: groupId,
-        paid_by: "55555555-5555-4555-8555-555555555555",
+        paid_by: "33333333-3333-4333-8333-333333333333",
         amount_cents: 100,
         description: "Bad payer",
         expense_date: "2026-11-04",
@@ -424,7 +452,7 @@ describe("issue #4 database security and integrity", () => {
       body: JSON.stringify({
         group_id: groupId,
         paid_by: "11111111-1111-4111-8111-111111111111",
-        paid_to: "55555555-5555-4555-8555-555555555555",
+        paid_to: "33333333-3333-4333-8333-333333333333",
         amount_cents: 100,
         payment_date: "2026-11-04",
       }),
@@ -439,14 +467,98 @@ describe("issue #4 database security and integrity", () => {
       memberToken,
       { method: "DELETE" },
     );
-    expect(memberDelete.status).toBeGreaterThanOrEqual(400);
+    expect(memberDelete.ok).toBe(true);
+    const remains = await request(
+      "expenses?id=eq.33333333-3333-4333-8333-333333333333",
+      memberToken,
+    );
+    expect(await remains.json()).toHaveLength(1);
 
     const adminToken = await signIn(users.admin);
+    const memberExpense = await rpc("create_expense", memberToken, {
+      p_expense: {
+        group_id: groupId,
+        paid_by: "22222222-2222-4222-8222-222222222222",
+        amount_cents: 100,
+        description: "Member deletion alert",
+        expense_date: "2026-11-04",
+      },
+      p_shares: [
+        {
+          user_id: "22222222-2222-4222-8222-222222222222",
+          amount_cents: 100,
+        },
+      ],
+    });
+    expect(memberExpense.ok).toBe(true);
+    const memberExpenseId = JSON.parse(await memberExpense.text()) as string;
+    const deleted = await request(
+      `expenses?id=eq.${memberExpenseId}`,
+      adminToken,
+      { method: "DELETE" },
+    );
+    expect(deleted.ok).toBe(true);
+    const activity = await request(
+      `activity?group_id=eq.${groupId}&description=eq.Member%20deletion%20alert&select=action,description`,
+      memberToken,
+    );
+    const activityRows = (await activity.json()) as Array<{
+      action: string;
+      description: string;
+    }>;
+    expect(
+      activityRows.some(
+        (row) =>
+          row.action === "deleted" &&
+          row.description === "Member deletion alert",
+      ),
+    ).toBe(true);
+    const alerts = await request(
+      "alerts?select=message&kind=eq.expense_deleted",
+      memberToken,
+    );
+    const alertRows = (await alerts.json()) as Array<{ message: string }>;
+    expect(alertRows.some((row) => row.message.includes("Admin User"))).toBe(
+      true,
+    );
+    expect(
+      alertRows.some((row) => row.message.includes("Member deletion alert")),
+    ).toBe(true);
+
+    const payment = await request("payments", memberToken, {
+      method: "POST",
+      body: JSON.stringify({
+        group_id: groupId,
+        paid_by: "22222222-2222-4222-8222-222222222222",
+        paid_to: "11111111-1111-4111-8111-111111111111",
+        amount_cents: 100,
+        payment_date: "2026-11-04",
+      }),
+    });
+    expect(payment.ok).toBe(true);
+    const paymentActivity = await request(
+      `activity?group_id=eq.${groupId}&action=eq.payment_recorded&select=description`,
+      memberToken,
+    );
+    const paymentActivityRows = (await paymentActivity.json()) as Array<{
+      description: string;
+    }>;
+    expect(
+      paymentActivityRows.some(
+        (row) => row.description === "Member User paid Admin User",
+      ),
+    ).toBe(true);
+
     const adminDelete = await request(
       `group_members?group_id=eq.${groupId}&user_id=eq.11111111-1111-4111-8111-111111111111`,
       adminToken,
       { method: "DELETE" },
     );
-    expect(adminDelete.status).toBeGreaterThanOrEqual(400);
+    expect(adminDelete.ok).toBe(true);
+    const adminMembership = await request(
+      `group_members?group_id=eq.${groupId}&user_id=eq.11111111-1111-4111-8111-111111111111`,
+      adminToken,
+    );
+    expect(await adminMembership.json()).toHaveLength(1);
   });
 });

@@ -595,6 +595,13 @@ export type Database = {
         Args: { p_expense: Json; p_shares: Json };
         Returns: string;
       };
+      group_member_profiles: {
+        Args: { p_group_id: string };
+        Returns: {
+          display_name: string;
+          id: string;
+        }[];
+      };
       is_group_admin: { Args: { p_group_id: string }; Returns: boolean };
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
       is_site_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
