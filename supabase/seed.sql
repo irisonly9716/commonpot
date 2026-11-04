@@ -115,12 +115,24 @@ values (
   date '2026-11-01'
 );
 
+insert into public.personal_expenses (
+  id, user_id, category, amount_cents, description, expense_date
+)
+values (
+  '77777777-7777-4777-8777-777777777777',
+  '33333333-3333-4333-8333-333333333333',
+  'Personal',
+  1800,
+  'Site admin personal expense',
+  date '2026-11-02'
+);
+
 insert into public.groups (id, name, currency, created_by)
 values (
   '99999999-9999-4999-8999-999999999999',
   'Other household',
   'USD',
-  '33333333-3333-4333-8333-333333333333'
+  '55555555-5555-4555-8555-555555555555'
 );
 
 insert into public.group_members (group_id, user_id, role)
@@ -130,14 +142,22 @@ values (
   'member'
 );
 
+insert into public.categories (id, group_id, name)
+values (
+  '88888888-8888-4888-8888-888888888888',
+  '99999999-9999-4999-8999-999999999999',
+  'Other groceries'
+);
+
 insert into public.expenses (
-  id, group_id, created_by, paid_by, amount_cents, description, expense_date
+  id, group_id, created_by, paid_by, category_id, amount_cents, description, expense_date
 )
 values (
   '66666666-6666-4666-8666-666666666666',
   '99999999-9999-4999-8999-999999999999',
   '55555555-5555-4555-8555-555555555555',
   '55555555-5555-4555-8555-555555555555',
+  '88888888-8888-4888-8888-888888888888',
   1200,
   'Other groceries',
   date '2026-11-01'

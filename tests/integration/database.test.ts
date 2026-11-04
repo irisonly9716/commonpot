@@ -6,6 +6,8 @@ const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const groupId = "11111111-1111-4111-8111-111111111111";
 const otherGroupId = "99999999-9999-4999-8999-999999999999";
 const personalExpenseId = "44444444-4444-4444-8444-444444444444";
+const siteAdminPersonalExpenseId = "77777777-7777-4777-8777-777777777777";
+const otherGroupCategoryId = "88888888-8888-4888-8888-888888888888";
 const userPassword = "password123";
 
 const users = {
@@ -251,7 +253,6 @@ describe("issue #4 database security and integrity", () => {
       "budgets",
       "alerts",
       "activity",
-      "personal_expenses",
     ]) {
       const response = await request(`${table}?select=*`, siteAdminToken);
       expect(response.ok).toBe(true);
@@ -264,6 +265,38 @@ describe("issue #4 database security and integrity", () => {
     );
     expect(profiles.ok).toBe(true);
     expect(await profiles.json()).not.toHaveLength(0);
+
+    const ownLedger = await request(
+      `personal_expenses?select=id&id=eq.${siteAdminPersonalExpenseId}`,
+      siteAdminToken,
+    );
+    expect(ownLedger.ok).toBe(true);
+    expect(await ownLedger.json()).toHaveLength(1);
+
+    for (const table of [
+      "expenses",
+      "expense_shares",
+      "payments",
+      "budgets",
+      "activity",
+    ]) {
+      const response = await request(`${table}?select=*`, siteAdminToken);
+      expect(response.ok).toBe(true);
+      expect(await response.json()).toEqual([]);
+    }
+
+    const anonymousFunction = await fetch(
+      `${supabaseUrl}/rest/v1/rpc/group_member_profiles`,
+      {
+        method: "POST",
+        headers: {
+          apikey: anonKey,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ p_group_id: groupId }),
+      },
+    );
+    expect(anonymousFunction.status).toBeGreaterThanOrEqual(400);
   });
 
   it("blocks non-admin platform counts and protects changed expense amounts", async () => {
@@ -345,13 +378,13 @@ describe("issue #4 database security and integrity", () => {
     ).toBe(true);
   });
 
-  it("allows each group member to receive the same budget threshold alert", async () => {
+  it("rejects a budget using another group's category", async () => {
     const adminToken = await signIn(users.admin);
     const budget = await request("budgets", adminToken, {
       method: "POST",
       body: JSON.stringify({
         group_id: groupId,
-        category_id: "00000000-0000-0000-0000-000000000000",
+        category_id: otherGroupCategoryId,
         limit_cents: 100,
         effective_from: "2026-11-01",
       }),
