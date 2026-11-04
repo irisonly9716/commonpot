@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "next build",
-    "check": "npm run lint && npm run typecheck && npm test",
+    "check": "npm run lint && npm run typecheck && npm test && npm run test:integration",
     "db:types": "supabase gen types typescript --local > src/lib/db/database.types.ts",
     "dev": "next dev",
     "format": "prettier --write .",
@@ -17,10 +17,10 @@
     "api:lint": "redocly lint docs/api/openapi.yaml",
     "prepare": "husky",
     "start": "next start",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test": "vitest run tests/unit",
+    "test:coverage": "vitest run tests/unit --coverage",
     "test:e2e": "playwright test --pass-with-no-tests",
-    "test:integration": "vitest run tests/integration --passWithNoTests",
+    "test:integration": "vitest run tests/integration --environment node --fileParallelism=false",
     "typecheck": "tsc --noEmit"
   },
   "repository": {

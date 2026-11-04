@@ -4,5 +4,6 @@ coverage
 out
 build
 public
+AGENTS.md
 supabase/.temp
 supabase/.branches
