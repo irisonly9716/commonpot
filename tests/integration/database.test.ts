@@ -4,7 +4,6 @@ const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const groupId = "11111111-1111-4111-8111-111111111111";
-const expenseId = "33333333-3333-4333-8333-333333333333";
 const personalExpenseId = "44444444-4444-4444-8444-444444444444";
 const userPassword = "password123";
 
@@ -26,8 +25,9 @@ async function signIn(email: string): Promise<string> {
       body: JSON.stringify({ email, password: userPassword }),
     },
   );
-  expect(response.ok, await response.text()).toBe(true);
-  const body = (await response.json()) as { access_token: string };
+  const responseText = await response.text();
+  expect(response.ok, responseText).toBe(true);
+  const body = JSON.parse(responseText) as { access_token: string };
   return body.access_token;
 }
 
@@ -112,6 +112,13 @@ describe("issue #4 database security and integrity", () => {
       },
     );
     expect(profileUpdate.status).toBeGreaterThanOrEqual(400);
+    const profile = await request(
+      "profiles?id=eq.22222222-2222-4222-8222-222222222222&select=is_site_admin,suspended_at",
+      memberToken,
+    );
+    expect(await profile.json()).toEqual([
+      { is_site_admin: false, suspended_at: null },
+    ]);
 
     const roleUpdate = await request(
       `group_members?group_id=eq.${groupId}&user_id=eq.22222222-2222-4222-8222-222222222222`,
@@ -121,7 +128,12 @@ describe("issue #4 database security and integrity", () => {
         body: JSON.stringify({ role: "admin" }),
       },
     );
-    expect(roleUpdate.status).toBeGreaterThanOrEqual(400);
+    expect(roleUpdate.ok).toBe(true);
+    const role = await request(
+      `group_members?group_id=eq.${groupId}&user_id=eq.22222222-2222-4222-8222-222222222222&select=role`,
+      memberToken,
+    );
+    expect(await role.json()).toEqual([{ role: "member" }]);
 
     const directJoin = await request("group_members", memberToken, {
       method: "POST",
@@ -135,26 +147,55 @@ describe("issue #4 database security and integrity", () => {
   });
 
   it("allows only the creator to edit and an admin to delete an expense", async () => {
+    const adminToken = await signIn(users.admin);
+    const created = await rpc("create_expense", adminToken, {
+      p_expense: {
+        group_id: groupId,
+        paid_by: "11111111-1111-4111-8111-111111111111",
+        amount_cents: 8400,
+        description: "Delete me",
+        expense_date: "2026-11-03",
+      },
+      p_shares: [
+        {
+          user_id: "11111111-1111-4111-8111-111111111111",
+          amount_cents: 4200,
+        },
+        {
+          user_id: "22222222-2222-4222-8222-222222222222",
+          amount_cents: 4200,
+        },
+      ],
+    });
+    const createdText = await created.text();
+    expect(created.ok, createdText).toBe(true);
+    const createdExpenseId = JSON.parse(createdText) as string;
+
     const memberToken = await signIn(users.member);
     const memberEdit = await request(
-      `expenses?id=eq.${expenseId}`,
+      `expenses?id=eq.${createdExpenseId}`,
       memberToken,
       {
         method: "PATCH",
         body: JSON.stringify({ description: "tampered" }),
       },
     );
-    expect(memberEdit.status).toBeGreaterThanOrEqual(400);
+    expect(memberEdit.ok).toBe(true);
+    const expense = await request(
+      `expenses?id=eq.${createdExpenseId}&select=description`,
+      memberToken,
+    );
+    expect(await expense.json()).toEqual([{ description: "Delete me" }]);
 
-    const adminToken = await signIn(users.admin);
     const adminDelete = await request(
-      `expenses?id=eq.${expenseId}`,
+      `expenses?id=eq.${createdExpenseId}`,
       adminToken,
       {
         method: "DELETE",
       },
     );
-    expect(adminDelete.ok).toBe(true);
+    const adminDeleteText = await adminDelete.text();
+    expect(adminDelete.ok, adminDeleteText).toBe(true);
   });
 
   it("requires atomic expense creation and validates shares and relationships", async () => {
@@ -193,7 +234,8 @@ describe("issue #4 database security and integrity", () => {
         },
       ],
     });
-    expect(created.ok).toBe(true);
+    const createdText = await created.text();
+    expect(created.ok, createdText).toBe(true);
   });
 
   it("does not expose operational details to site admins", async () => {
