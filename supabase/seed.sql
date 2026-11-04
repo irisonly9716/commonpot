@@ -135,13 +135,6 @@ values (
   '55555555-5555-4555-8555-555555555555'
 );
 
-insert into public.group_members (group_id, user_id, role)
-values (
-  '99999999-9999-4999-8999-999999999999',
-  '55555555-5555-4555-8555-555555555555',
-  'member'
-);
-
 insert into public.categories (id, group_id, name)
 values (
   '88888888-8888-4888-8888-888888888888',

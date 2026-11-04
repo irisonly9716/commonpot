@@ -676,7 +676,7 @@ create policy invites_admin_delete on public.invites for delete
   using (public.is_group_admin(group_id));
 
 create policy expenses_member_select on public.expenses for select
-  using (public.is_group_member(group_id) and not public.is_site_admin());
+  using (public.is_group_member(group_id));
 create policy expenses_member_insert on public.expenses for insert
   with check (public.is_group_member(group_id) and created_by = (select auth.uid()));
 create policy expenses_creator_update on public.expenses for update
@@ -686,7 +686,7 @@ create policy expenses_creator_delete on public.expenses for delete
   using (created_by = (select auth.uid()) or public.is_group_admin(group_id));
 
 create policy shares_member_select on public.expense_shares for select
-  using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id) and not public.is_site_admin()));
+  using (exists (select 1 from public.expenses e where e.id = expense_id and public.is_group_member(e.group_id)));
 create policy shares_member_insert on public.expense_shares for insert
   with check (exists (select 1 from public.expenses e where e.id = expense_id and e.created_by = (select auth.uid())));
 create policy shares_creator_update on public.expense_shares for update
@@ -696,7 +696,7 @@ create policy shares_creator_delete on public.expense_shares for delete
   using (exists (select 1 from public.expenses e where e.id = expense_id and e.created_by = (select auth.uid())));
 
 create policy payments_member_select on public.payments for select
-  using (public.is_group_member(group_id) and not public.is_site_admin());
+  using (public.is_group_member(group_id));
 create policy payments_member_insert on public.payments for insert
   with check (public.is_group_member(group_id) and (paid_by = (select auth.uid()) or public.is_group_admin(group_id)));
 create policy payments_member_update on public.payments for update
@@ -705,7 +705,7 @@ create policy payments_member_delete on public.payments for delete
   using (paid_by = (select auth.uid()) or public.is_group_admin(group_id));
 
 create policy budgets_member_select on public.budgets for select
-  using (public.is_group_member(group_id) and not public.is_site_admin());
+  using (public.is_group_member(group_id));
 create policy budgets_admin_insert on public.budgets for insert
   with check (public.is_group_admin(group_id));
 create policy budgets_admin_update on public.budgets for update
@@ -714,16 +714,16 @@ create policy budgets_admin_delete on public.budgets for delete
   using (public.is_group_admin(group_id));
 
 create policy alerts_owner_select on public.alerts for select
-  using (user_id = (select auth.uid()) and not public.is_site_admin());
+  using (user_id = (select auth.uid()));
 create policy alerts_owner_update on public.alerts for update
   using (user_id = (select auth.uid()))
   with check (user_id = (select auth.uid()));
 
 create policy activity_member_select on public.activity for select
-  using (public.is_group_member(group_id) and not public.is_site_admin());
+  using (public.is_group_member(group_id));
 
 create policy personal_expenses_owner_select on public.personal_expenses for select
-  using (user_id = (select auth.uid()) and not public.is_site_admin());
+  using (user_id = (select auth.uid()));
 create policy personal_expenses_owner_insert on public.personal_expenses for insert
   with check (user_id = (select auth.uid()));
 create policy personal_expenses_owner_update on public.personal_expenses for update
@@ -739,3 +739,6 @@ grant execute on function public.accept_invite(text) to authenticated;
 grant execute on function public.create_expense(jsonb, jsonb) to authenticated;
 grant execute on function public.update_expense(uuid, jsonb, jsonb) to authenticated;
 grant execute on function public.group_member_profiles(uuid) to authenticated;
+revoke all on function public.group_member_profiles(uuid) from public;
+grant execute on function public.group_member_profiles(uuid) to authenticated;
+revoke execute on function public.group_member_profiles(uuid) from anon;
