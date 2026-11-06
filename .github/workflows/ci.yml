@@ -1,7 +1,8 @@
 # CI for every pull request (issue #2). Order follows AGENTS.md section 1:
 # lint and format -> typecheck -> unit and integration tests -> build -> E2E.
 # A separate security job runs npm audit and CodeQL.
-# CI uses only a local Supabase started inside the runner. It never reads production secrets.
+# CI uses only a local Supabase started inside the runner, with the CLI version pinned in package.json (npx supabase).
+# It never reads production secrets.
 name: CI
 
 on:
@@ -24,8 +25,8 @@ jobs:
     name: Lint and format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -38,8 +39,8 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -51,23 +52,19 @@ jobs:
     needs: typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
       - run: npm run test:coverage
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
       - name: Start local Supabase (test database only)
-        run: supabase start
-      - name: Export local Supabase settings for the tests
-        # TODO(#2): match these variable names to .env.example once the scaffold (#1) is merged.
-        run: supabase status -o env | sed 's/"//g' >> "$GITHUB_ENV"
+        run: npx supabase start
+      - name: Map local Supabase settings to the variables the tests read
+        run: ./.github/scripts/supabase-env.sh
       - run: npm run test:integration
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage
@@ -79,8 +76,8 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -96,20 +93,19 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-      - run: supabase start
-      - run: supabase status -o env | sed 's/"//g' >> "$GITHUB_ENV"
+      - name: Start local Supabase (test database only)
+        run: npx supabase start
+      - name: Map local Supabase settings to the variables the tests read
+        run: ./.github/scripts/supabase-env.sh
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
@@ -123,14 +119,14 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
       - run: npm audit --audit-level=high
-      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@v4
