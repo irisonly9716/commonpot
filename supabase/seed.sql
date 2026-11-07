@@ -27,6 +27,12 @@ values
     '55555555-5555-4555-8555-555555555555', 'authenticated', 'authenticated',
     'other-member@example.com', crypt('password123', gen_salt('bf')), now(), '{}', '{}',
     '', '', '', '', now(), now()
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '12121212-1212-4212-8212-121212121212', 'authenticated', 'authenticated',
+    'third-member@example.com', crypt('password123', gen_salt('bf')), now(), '{}', '{}',
+    '', '', '', '', now(), now()
   );
 
 update public.profiles
@@ -36,6 +42,10 @@ where id = '11111111-1111-4111-8111-111111111111';
 update public.profiles
 set display_name = 'Member User'
 where id = '22222222-2222-4222-8222-222222222222';
+
+update public.profiles
+set display_name = 'Third Member'
+where id = '12121212-1212-4212-8212-121212121212';
 
 update public.profiles
 set display_name = 'Site Admin', is_site_admin = true
@@ -60,6 +70,11 @@ insert into public.group_members (group_id, user_id, role)
 values (
   '11111111-1111-4111-8111-111111111111',
   '22222222-2222-4222-8222-222222222222',
+  'member'
+),
+(
+  '11111111-1111-4111-8111-111111111111',
+  '12121212-1212-4212-8212-121212121212',
   'member'
 );
 

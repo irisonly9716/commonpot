@@ -15,6 +15,7 @@ const users = {
   member: "member@example.com",
   siteAdmin: "site-admin@example.com",
   otherMember: "other-member@example.com",
+  thirdMember: "third-member@example.com",
 };
 
 async function signIn(email: string): Promise<string> {
@@ -593,5 +594,74 @@ describe("issue #4 database security and integrity", () => {
       adminToken,
     );
     expect(await adminMembership.json()).toHaveLength(1);
+  });
+
+  it("lets only the payer or the payee record or delete a payment", async () => {
+    const adminToken = await signIn(users.admin);
+    const thirdToken = await signIn(users.thirdMember);
+    const memberId = "22222222-2222-4222-8222-222222222222";
+    const thirdId = "12121212-1212-4212-8212-121212121212";
+    const payment = {
+      group_id: groupId,
+      paid_by: memberId,
+      paid_to: thirdId,
+      amount_cents: 250,
+      payment_date: "2026-11-07",
+    };
+
+    const onBehalf = await request("payments", adminToken, {
+      method: "POST",
+      body: JSON.stringify(payment),
+    });
+    expect(onBehalf.status).toBeGreaterThanOrEqual(400);
+
+    const asPayee = await request("payments", thirdToken, {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(payment),
+    });
+    const asPayeeText = await asPayee.text();
+    expect(asPayee.ok, asPayeeText).toBe(true);
+    const [{ id: paymentId }] = JSON.parse(asPayeeText) as Array<{
+      id: string;
+    }>;
+
+    await request(`payments?id=eq.${paymentId}`, adminToken, {
+      method: "DELETE",
+    });
+    const remains = await request(
+      `payments?id=eq.${paymentId}&select=id`,
+      thirdToken,
+    );
+    expect(await remains.json()).toHaveLength(1);
+  });
+
+  it("does not let anonymous callers run the write functions", async () => {
+    const calls: Array<[string, unknown]> = [
+      ["accept_invite", { p_token: "not-a-real-token" }],
+      ["create_expense", { p_expense: {}, p_shares: [] }],
+      [
+        "update_expense",
+        {
+          p_expense_id: "33333333-3333-4333-8333-333333333333",
+          p_expense: {},
+          p_shares: [],
+        },
+      ],
+    ];
+    for (const [functionName, body] of calls) {
+      const response = await fetch(
+        `${supabaseUrl}/rest/v1/rpc/${functionName}`,
+        {
+          method: "POST",
+          headers: { apikey: anonKey, "content-type": "application/json" },
+          body: JSON.stringify(body),
+        },
+      );
+      expect(response.status, functionName).toBeGreaterThanOrEqual(400);
+      expect(await response.text(), functionName).toContain(
+        "permission denied for function",
+      );
+    }
   });
 });
