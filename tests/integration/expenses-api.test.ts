@@ -12,7 +12,7 @@ const groupId = "11111111-1111-4111-8111-111111111111";
 const userPassword = "password123";
 const users = {
   admin: "admin@example.com",
-  otherMember: "other-member@example.com",
+  nonMember: "site-admin@example.com",
 };
 
 async function signIn(email: string): Promise<string> {
@@ -47,6 +47,8 @@ function request(
   });
 }
 
+const context = { params: Promise.resolve({ groupId }) };
+
 describe("US3 expense API", () => {
   it("creates an expense and returns it first from GET", async () => {
     const token = await signIn(users.admin);
@@ -68,10 +70,11 @@ describe("US3 expense API", () => {
           },
         ],
       }),
+      context,
     );
 
     expect(response.status).toBe(201);
-    const listResponse = await GET(request("GET", token));
+    const listResponse = await GET(request("GET", token), context);
     const list = (await listResponse.json()) as Array<{
       description: string;
     }>;
@@ -86,6 +89,7 @@ describe("US3 expense API", () => {
         amountCents: 0,
         description: "",
       }),
+      context,
     );
 
     expect(response.status).toBe(422);
@@ -95,7 +99,7 @@ describe("US3 expense API", () => {
   });
 
   it("returns 401 without a token", async () => {
-    const response = await GET(request("GET", undefined));
+    const response = await GET(request("GET", undefined), context);
 
     expect(response.status).toBe(401);
     expect(await response.json()).toMatchObject({
@@ -104,8 +108,8 @@ describe("US3 expense API", () => {
   });
 
   it("does not expose expenses to a non-member", async () => {
-    const token = await signIn(users.otherMember);
-    const response = await GET(request("GET", token));
+    const token = await signIn(users.nonMember);
+    const response = await GET(request("GET", token), context);
 
     expect([403, 404]).toContain(response.status);
   });
