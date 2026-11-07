@@ -182,8 +182,7 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 
 - Never read, print or commit `.env*` files or secrets. `.env.example` lists variable names only; local, preview and production each have their own values in Vercel and Supabase. The Supabase secret (service-role) key is server-only and never goes in a `NEXT_PUBLIC_` variable.
 - Every table has RLS enabled, with its policies in the same migration. Never trust a user id or role sent by the client; read it from the verified token.
-- Validate every request body, query and path parameter with Zod on the server. No SQL built from strings.
-- Keep sign-in errors generic. Never log tokens, passwords or whole request bodies.
+- Validate every request body, query and path parameter with Zod on the server. No SQL built from strings. Keep sign-in errors generic, and never log tokens, passwords or whole request bodies.
 
 **Accessibility (WCAG 2.1 AA)**
 
@@ -197,3 +196,4 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 
 - v1 · 2026-10-30 · Arianna · First draft, based on PRD v0.2.
 - v2 · 2026-10-30 · Arianna · After the before/after test on #8: cover every acceptance criterion, Zod for all validation, no raw cents in messages, describe the placeholder mockups (#20).
+- v3 · 2026-11-07 · Arianna · Formatted with Prettier and merged short bullets to stay under 200 lines; no rules removed (#1).
