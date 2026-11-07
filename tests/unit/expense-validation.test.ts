@@ -37,4 +37,22 @@ describe("US3 expense validation", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("limits descriptions to 200 characters", () => {
+    const result = expenseCreateSchema.safeParse({
+      amountCents: 100,
+      description: "x".repeat(201),
+      categoryId: null,
+      expenseDate: "2026-11-07",
+      paidBy: "11111111-1111-4111-8111-111111111111",
+      shares: [
+        {
+          userId: "11111111-1111-4111-8111-111111111111",
+          amountCents: 100,
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
 });

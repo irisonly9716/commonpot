@@ -98,6 +98,37 @@ describe("US3 expense API", () => {
     });
   });
 
+  it("returns 415 when POST is not JSON", async () => {
+    const token = await signIn(users.admin);
+    const response = await POST(
+      new Request(`http://localhost/api/v1/groups/${groupId}/expenses`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: "not json",
+      }),
+      context,
+    );
+
+    expect(response.status).toBe(415);
+  });
+
+  it("returns 422 for an invalid group id", async () => {
+    const token = await signIn(users.admin);
+    const response = await POST(
+      new Request("http://localhost/api/v1/groups/not-a-uuid/expenses", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+        },
+        body: "{}",
+      }),
+      { params: Promise.resolve({ groupId: "not-a-uuid" }) },
+    );
+
+    expect(response.status).toBe(422);
+  });
+
   it("returns 401 without a token", async () => {
     const response = await GET(request("GET", undefined), context);
 

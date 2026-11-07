@@ -1,9 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup } from "@testing-library/react";
 
-import { ExpenseForm } from "../../src/components/expenses/expense-form";
+import {
+  ExpenseForm,
+  getLocalDateString,
+} from "@/components/expenses/expense-form";
 
 const members = [
   { id: "11111111-1111-4111-8111-111111111111", displayName: "You" },
@@ -49,10 +51,48 @@ describe("US3 expense form", () => {
 
     await user.type(screen.getByLabelText("Amount"), "120.00");
     await user.click(screen.getByRole("radio", { name: "Exact amounts" }));
-    expect(screen.getByRole("alert")).toHaveTextContent(
+    expect(screen.getByText("$120.00 left to assign")).toHaveAttribute(
+      "aria-live",
+      "polite",
+    );
+    expect(screen.queryByRole("alert")).not.toHaveTextContent(
       "$120.00 left to assign",
     );
     expect(screen.getByRole("button", { name: "Save expense" })).toBeDisabled();
+  });
+
+  it("shows the amount-specific validation message", async () => {
+    const user = userEvent.setup();
+    render(
+      <ExpenseForm
+        groupId="group-1"
+        currentUserId={members[0].id}
+        members={members}
+        categories={categories}
+        currency="USD"
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Amount"), "1.234");
+    await user.click(screen.getByRole("button", { name: "Save expense" }));
+
+    expect(
+      screen.getByText(
+        "Enter an amount greater than $0 with at most 2 decimals",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("uses the local calendar date", () => {
+    const previousTimeZone = process.env.TZ;
+    process.env.TZ = "America/Los_Angeles";
+    try {
+      expect(getLocalDateString(new Date("2026-11-08T01:30:00.000Z"))).toBe(
+        "2026-11-07",
+      );
+    } finally {
+      process.env.TZ = previousTimeZone;
+    }
   });
 
   it("submits integer cents to the expense API", async () => {
@@ -78,6 +118,7 @@ describe("US3 expense form", () => {
       "/api/v1/groups/group-1/expenses",
       expect.objectContaining({ method: "POST" }),
     );
+    expect(screen.getByLabelText("Amount")).toHaveValue("");
     fetchMock.mockRestore();
   });
 });
