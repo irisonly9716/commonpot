@@ -1,10 +1,18 @@
-import { getAuthenticatedSupabase } from "../../../../../../lib/api/auth";
-import { apiError } from "../../../../../../lib/api/errors";
-import { expenseCreateSchema } from "../../../../../../lib/validation/expenses";
+import { getAuthenticatedSupabase } from "@/lib/api/auth";
+import { apiError } from "@/lib/api/errors";
+import { expenseCreateSchema } from "@/lib/validation/expenses";
+import { z } from "zod";
 
 type RouteContext = {
   params: Promise<{ groupId: string }>;
 };
+
+const groupIdSchema = z.uuid();
+
+async function getGroupId(context: RouteContext): Promise<string | null> {
+  const { groupId } = await context.params;
+  return groupIdSchema.safeParse(groupId).success ? groupId : null;
+}
 
 async function getMembership(
   supabase: Awaited<ReturnType<typeof getAuthenticatedSupabase>>,
@@ -22,11 +30,13 @@ async function getMembership(
 }
 
 export async function GET(request: Request, context: RouteContext) {
+  const groupId = await getGroupId(context);
+  if (!groupId) return apiError("VALIDATION_ERROR", "Invalid group id", 422);
+
   const authenticated = await getAuthenticatedSupabase(request);
   if (!authenticated)
     return apiError("UNAUTHORIZED", "Authentication required", 401);
 
-  const { groupId } = await context.params;
   if (!(await getMembership(authenticated, groupId, authenticated.user.id))) {
     return apiError("NOT_FOUND", "Group not found", 404);
   }
@@ -62,16 +72,28 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 export async function POST(request: Request, context: RouteContext) {
+  const groupId = await getGroupId(context);
+  if (!groupId) return apiError("VALIDATION_ERROR", "Invalid group id", 422);
+
   const authenticated = await getAuthenticatedSupabase(request);
   if (!authenticated)
     return apiError("UNAUTHORIZED", "Authentication required", 401);
 
-  const { groupId } = await context.params;
   if (!(await getMembership(authenticated, groupId, authenticated.user.id))) {
     return apiError("NOT_FOUND", "Group not found", 404);
   }
 
   let body: unknown;
+  if (
+    request.headers.get("content-type")?.split(";")[0] !== "application/json"
+  ) {
+    return apiError(
+      "UNSUPPORTED_MEDIA_TYPE",
+      "Content-Type must be application/json",
+      415,
+    );
+  }
+
   try {
     body = await request.json();
   } catch {

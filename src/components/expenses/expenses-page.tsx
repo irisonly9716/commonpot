@@ -6,7 +6,8 @@ import type {
   ExpenseCategory,
   ExpenseListItem,
   ExpenseMember,
-} from "../../lib/data/expenses";
+} from "@/lib/data/expenses";
+import { formatMoney } from "@/lib/format-money";
 import { ExpenseForm } from "./expense-form";
 
 type ExpensesPageProps = {
@@ -17,13 +18,6 @@ type ExpensesPageProps = {
   expenses: ExpenseListItem[];
   currency: string;
 };
-
-function formatMoney(amountCents: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amountCents / 100);
-}
 
 export function ExpensesPage({
   groupId,

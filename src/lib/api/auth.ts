@@ -3,27 +3,22 @@ import {
   type SupabaseClient,
   type User,
 } from "@supabase/supabase-js";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-
-import type { Database } from "../db/database.types";
+import {
+  createServerSupabaseClient,
+  supabaseAnonKey,
+  supabaseUrl,
+} from "@/lib/db/server";
+import type { Database } from "@/lib/db/database.types";
 
 type AuthenticatedSupabase = {
   supabase: SupabaseClient<Database>;
   user: User;
 };
 
-const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";
-
 function createBearerClient(token: string): SupabaseClient<Database> {
-  return createClient<Database>(
-    supabaseUrl,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-    {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-    },
-  );
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
 }
 
 export async function getAuthenticatedSupabase(
@@ -37,25 +32,7 @@ export async function getAuthenticatedSupabase(
     if (!token) return null;
     supabase = createBearerClient(token);
   } else if (!authorization && request.headers.get("cookie")) {
-    const cookieStore = await cookies();
-    supabase = createServerClient<Database>(
-      supabaseUrl,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-      {
-        cookies: {
-          getAll: () => cookieStore.getAll(),
-          setAll: (cookiesToSet) => {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options),
-              );
-            } catch {
-              // Route handlers may be called without a writable cookie context.
-            }
-          },
-        },
-      },
-    );
+    supabase = await createServerSupabaseClient();
   } else {
     return null;
   }

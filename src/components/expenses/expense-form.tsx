@@ -1,13 +1,20 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 
 import {
   checkExactSplit,
   parseAmountToCents,
   splitEqually,
-} from "../../lib/domain/expenses";
-import { expenseCreateSchema } from "../../lib/validation/expenses";
+} from "@/lib/domain/expenses";
+import { formatMoney } from "@/lib/format-money";
+import {
+  expenseCreateSchema,
+  expenseFormSchema,
+  type ExpenseFormInput,
+} from "@/lib/validation/expenses";
 
 type Member = { id: string; displayName: string };
 type Category = { id: string; name: string };
@@ -21,15 +28,28 @@ type ExpenseFormProps = {
   onCreated?: () => void;
 };
 
-function formatMoney(amountCents: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amountCents / 100);
+export function getLocalDateString(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
+function getDefaultValues(
+  currentUserId: string,
+  members: Member[],
+  categories: Category[],
+): ExpenseFormInput {
+  return {
+    amount: "",
+    description: "",
+    categoryId: categories[0]?.id ?? "",
+    expenseDate: getLocalDateString(),
+    paidBy: currentUserId,
+    splitMode: "equal",
+    memberIds: members.map((member) => member.id),
+    exactAmounts: {},
+  };
 }
 
 export function ExpenseForm({
@@ -40,18 +60,28 @@ export function ExpenseForm({
   currency,
   onCreated,
 }: ExpenseFormProps) {
-  const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
-  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
-  const [expenseDate, setExpenseDate] = useState(today);
-  const [paidBy, setPaidBy] = useState(currentUserId);
-  const [selectedMemberIds, setSelectedMemberIds] = useState(
-    () => new Set(members.map((member) => member.id)),
+  const defaults = useMemo(
+    () => getDefaultValues(currentUserId, members, categories),
+    [categories, currentUserId, members],
   );
-  const [splitMode, setSplitMode] = useState<"equal" | "exact">("equal");
-  const [exactAmounts, setExactAmounts] = useState<Record<string, string>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
+  const {
+    control,
+    clearErrors,
+    formState: { errors, isSubmitting },
+    handleSubmit,
+    register,
+    reset,
+    setError,
+    setValue,
+  } = useForm<ExpenseFormInput>({
+    defaultValues: defaults,
+    resolver: zodResolver(expenseFormSchema),
+  });
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const amount = useWatch({ control, name: "amount" });
+  const splitMode = useWatch({ control, name: "splitMode" });
+  const memberIds = useWatch({ control, name: "memberIds" });
+  const exactAmounts = useWatch({ control, name: "exactAmounts" });
 
   const amountCents = useMemo(() => {
     try {
@@ -62,7 +92,7 @@ export function ExpenseForm({
   }, [amount]);
 
   const selectedMembers = members.filter((member) =>
-    selectedMemberIds.has(member.id),
+    memberIds.includes(member.id),
   );
   const equalShares = amountCents
     ? splitEqually(
@@ -70,64 +100,69 @@ export function ExpenseForm({
         selectedMembers.map((member) => member.id),
       )
     : [];
-  const exactShares = selectedMembers.map((member) => ({
-    userId: member.id,
-    amountCents: (() => {
-      try {
-        return exactAmounts[member.id]
-          ? parseAmountToCents(exactAmounts[member.id])
-          : 0;
-      } catch {
-        return 0;
-      }
-    })(),
-  }));
+  const exactShares = selectedMembers.map((member) => {
+    let shareAmountCents = 0;
+    try {
+      shareAmountCents = exactAmounts[member.id]
+        ? parseAmountToCents(exactAmounts[member.id])
+        : 0;
+    } catch {
+      shareAmountCents = 0;
+    }
+    return { userId: member.id, amountCents: shareAmountCents };
+  });
   const exactDifference = checkExactSplit(
     amountCents,
     exactShares.map((share) => share.amountCents),
   ).differenceCents;
-  const shares = splitMode === "equal" ? equalShares : exactShares;
   const exactValid = splitMode === "equal" || exactDifference === 0;
+  const shares = splitMode === "equal" ? equalShares : exactShares;
 
   function toggleMember(memberId: string) {
-    setSelectedMemberIds((current) => {
-      const next = new Set(current);
-      if (next.has(memberId)) next.delete(memberId);
-      else next.add(memberId);
-      return next;
-    });
+    const next = memberIds.includes(memberId)
+      ? memberIds.filter((id) => id !== memberId)
+      : [...memberIds, memberId];
+    setValue("memberIds", next, { shouldValidate: true });
+    clearErrors("memberIds");
   }
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const result = expenseCreateSchema.safeParse({
-      amountCents,
-      description,
-      categoryId: categoryId || null,
-      expenseDate,
-      paidBy,
-      shares,
-    });
-    if (!result.success || !exactValid) {
-      setErrors({
-        ...(result.success
-          ? {}
-          : Object.fromEntries(
-              result.error.issues.map((issue) => [
-                String(issue.path[0] ?? "form"),
-                issue.message,
-              ]),
-            )),
-        ...(exactValid
-          ? {}
-          : {
-              shares: `Exact amounts must add up to ${formatMoney(amountCents, currency)}.`,
-            }),
+  const submit = handleSubmit(async (values) => {
+    setSubmitError(null);
+    let parsedAmountCents: number;
+    try {
+      parsedAmountCents = parseAmountToCents(values.amount);
+    } catch {
+      setError("amount", {
+        message: "Enter an amount greater than $0 with at most 2 decimals",
       });
       return;
     }
 
-    setSubmitting(true);
+    const result = expenseCreateSchema.safeParse({
+      amountCents: parsedAmountCents,
+      description: values.description,
+      categoryId: values.categoryId || null,
+      expenseDate: values.expenseDate,
+      paidBy: values.paidBy,
+      shares,
+    });
+    if (!result.success || !exactValid) {
+      if (!result.success) {
+        const issue = result.error.issues[0];
+        if (issue?.path[0] === "description") {
+          setError("description", { message: issue.message });
+        } else if (issue?.path[0] === "shares") {
+          setSubmitError(issue.message);
+        }
+      }
+      if (!exactValid) {
+        setSubmitError(
+          `Exact amounts must add up to ${formatMoney(amountCents, currency)}.`,
+        );
+      }
+      return;
+    }
+
     try {
       const response = await fetch(`/api/v1/groups/${groupId}/expenses`, {
         method: "POST",
@@ -135,16 +170,15 @@ export function ExpenseForm({
         body: JSON.stringify(result.data),
       });
       if (!response.ok) {
-        setErrors({ form: "Could not save expense." });
+        setSubmitError("Could not save expense.");
         return;
       }
+      reset(defaults);
       onCreated?.();
     } catch {
-      setErrors({ form: "Could not save expense." });
-    } finally {
-      setSubmitting(false);
+      setSubmitError("Could not save expense.");
     }
-  }
+  });
 
   return (
     <form className="expense-form" onSubmit={submit} noValidate>
@@ -152,15 +186,13 @@ export function ExpenseForm({
       <label>
         Amount
         <input
-          aria-describedby={errors.amountCents ? "amount-error" : undefined}
-          aria-invalid={Boolean(errors.amountCents)}
+          aria-describedby={errors.amount ? "amount-error" : undefined}
+          aria-invalid={Boolean(errors.amount)}
           inputMode="decimal"
-          name="amount"
-          onChange={(event) => setAmount(event.target.value)}
-          value={amount}
+          {...register("amount")}
         />
       </label>
-      {errors.amountCents && <p id="amount-error">{errors.amountCents}</p>}
+      {errors.amount && <p id="amount-error">{errors.amount.message}</p>}
 
       <label>
         Description
@@ -169,20 +201,17 @@ export function ExpenseForm({
             errors.description ? "description-error" : undefined
           }
           aria-invalid={Boolean(errors.description)}
-          name="description"
-          onChange={(event) => setDescription(event.target.value)}
-          value={description}
+          maxLength={200}
+          {...register("description")}
         />
       </label>
-      {errors.description && <p id="description-error">{errors.description}</p>}
+      {errors.description && (
+        <p id="description-error">{errors.description.message}</p>
+      )}
 
       <label>
         Category
-        <select
-          name="category"
-          onChange={(event) => setCategoryId(event.target.value)}
-          value={categoryId}
-        >
+        <select {...register("categoryId")}>
           <option value="">No category</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
@@ -197,21 +226,17 @@ export function ExpenseForm({
         <input
           aria-describedby={errors.expenseDate ? "date-error" : undefined}
           aria-invalid={Boolean(errors.expenseDate)}
-          name="date"
-          onChange={(event) => setExpenseDate(event.target.value)}
           type="date"
-          value={expenseDate}
+          {...register("expenseDate")}
         />
       </label>
-      {errors.expenseDate && <p id="date-error">{errors.expenseDate}</p>}
+      {errors.expenseDate && (
+        <p id="date-error">{errors.expenseDate.message}</p>
+      )}
 
       <label>
         Paid by
-        <select
-          name="paidBy"
-          onChange={(event) => setPaidBy(event.target.value)}
-          value={paidBy}
-        >
+        <select {...register("paidBy")}>
           {members.map((member) => (
             <option key={member.id} value={member.id}>
               {member.displayName}
@@ -223,21 +248,11 @@ export function ExpenseForm({
       <fieldset>
         <legend>Split</legend>
         <label>
-          <input
-            checked={splitMode === "equal"}
-            name="splitMode"
-            onChange={() => setSplitMode("equal")}
-            type="radio"
-          />
+          <input type="radio" value="equal" {...register("splitMode")} />
           Equally
         </label>
         <label>
-          <input
-            checked={splitMode === "exact"}
-            name="splitMode"
-            onChange={() => setSplitMode("exact")}
-            type="radio"
-          />
+          <input type="radio" value="exact" {...register("splitMode")} />
           Exact amounts
         </label>
       </fieldset>
@@ -246,26 +261,21 @@ export function ExpenseForm({
         <legend>Shared by</legend>
         {members.map((member) => {
           const share = shares.find((item) => item.userId === member.id);
+          const isSelected = memberIds.includes(member.id);
           return (
             <label key={member.id}>
               <input
-                checked={selectedMemberIds.has(member.id)}
+                checked={isSelected}
                 onChange={() => toggleMember(member.id)}
                 type="checkbox"
               />
               {member.displayName}
-              {selectedMemberIds.has(member.id) ? (
+              {isSelected ? (
                 splitMode === "exact" ? (
                   <input
                     aria-label={`${member.displayName} exact amount`}
                     inputMode="decimal"
-                    onChange={(event) =>
-                      setExactAmounts((current) => ({
-                        ...current,
-                        [member.id]: event.target.value,
-                      }))
-                    }
-                    value={exactAmounts[member.id] ?? ""}
+                    {...register(`exactAmounts.${member.id}`)}
                   />
                 ) : (
                   <span>{formatMoney(share?.amountCents ?? 0, currency)}</span>
@@ -285,14 +295,15 @@ export function ExpenseForm({
         </p>
       )}
       {splitMode === "exact" && (
-        <p role="alert">
-          {formatMoney(exactDifference, currency)} left to assign. Exact amounts
-          must add up to {formatMoney(amountCents, currency)}.
+        <p aria-live="polite">
+          <span>
+            {formatMoney(exactDifference, currency)} left to assign. Exact
+            amounts must add up to {formatMoney(amountCents, currency)}.
+          </span>
         </p>
       )}
-      {errors.shares && <p role="alert">{errors.shares}</p>}
-      {errors.form && <p role="alert">{errors.form}</p>}
-      <button disabled={submitting || !exactValid} type="submit">
+      {submitError && <p role="alert">{submitError}</p>}
+      <button disabled={isSubmitting || !exactValid} type="submit">
         Save expense
       </button>
     </form>

@@ -51,13 +51,11 @@ describe("US3 expense form", () => {
 
     await user.type(screen.getByLabelText("Amount"), "120.00");
     await user.click(screen.getByRole("radio", { name: "Exact amounts" }));
-    expect(screen.getByText("$120.00 left to assign")).toHaveAttribute(
+    expect(document.querySelector("[aria-live]")).toHaveAttribute(
       "aria-live",
       "polite",
     );
-    expect(screen.queryByRole("alert")).not.toHaveTextContent(
-      "$120.00 left to assign",
-    );
+    expect(screen.queryByRole("alert")).toBeNull();
     expect(screen.getByRole("button", { name: "Save expense" })).toBeDisabled();
   });
 

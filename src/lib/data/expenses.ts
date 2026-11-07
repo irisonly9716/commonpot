@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "../db/server";
+import { createServerSupabaseClient } from "@/lib/db/server";
 
 export type ExpenseMember = {
   id: string;

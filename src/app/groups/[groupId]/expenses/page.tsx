@@ -1,5 +1,5 @@
-import { ExpensesPage } from "../../../../components/expenses/expenses-page";
-import { getExpensePageData } from "../../../../lib/data/expenses";
+import { ExpensesPage } from "@/components/expenses/expenses-page";
+import { getExpensePageData } from "@/lib/data/expenses";
 
 type PageProps = {
   params: Promise<{ groupId: string }>;

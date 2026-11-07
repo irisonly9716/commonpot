@@ -15,6 +15,10 @@ Shared expense accounts for households, roommates and small groups: log and spli
 | Decisions                           | [docs/decisions/](docs/decisions/)                   |
 | Sprints (planning, standups, retro) | [docs/sprints/](docs/sprints/)                       |
 
+## Local setup
+
+Copy `.env.example` to `.env.local`, then fill in its values from `npx supabase status`.
+
 ## Stack
 
 Next.js 16 + React 19 + TypeScript 6, Tailwind CSS 4 + shadcn/ui, Supabase (PostgreSQL, Auth, Realtime), Vitest and Playwright, deployed on Vercel. Exact versions and commands are in [AGENTS.md](AGENTS.md).
