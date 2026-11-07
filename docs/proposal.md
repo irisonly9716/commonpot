@@ -7,6 +7,7 @@ CommonPot is a shared expense account for households, roommates, couples and oth
 CommonPot gives each group one account that every member can see and update. Members log an expense, choose who shares it, and split it equally or by exact amounts. Balances update automatically, and new expenses appear on everyone's screen in real time, so the whole group always sees the same numbers. A "Settle up" view suggests a short list of payments that clears all debts. The group admin invites members, manages roles and sets monthly budgets by category, such as $400 for groceries, and every member gets an alert when spending reaches 80% or 100% of a budget. Each member can see their own monthly spending and the group's total, with charts by category and month. Each user also has a private personal ledger that adds up their own expenses and their shares from every group. A site admin oversees the platform, and a documented public REST API lets users connect other tools, such as a script that imports a bank export. CommonPot records payments between members but never moves real money.
 
 User Stories:
+
 1. As a household organizer, I want to create a shared account and invite my roommates or family with a link, so that everyone records shared costs in one place.
 2. As a member, I want to log an expense with who paid and who shares it, split equally or by exact amounts, so that costs are divided fairly without doing math in a chat.
 3. As a member, I want new and edited expenses to appear on my screen in real time, so that I always see the same numbers as everyone else.
