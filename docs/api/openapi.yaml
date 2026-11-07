@@ -13,6 +13,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/GroupId"
     get:
+      operationId: listGroupExpenses
       summary: List group expenses
       security:
         - bearerAuth: []
@@ -32,6 +33,7 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
     post:
+      operationId: createGroupExpense
       summary: Add a group expense
       security:
         - bearerAuth: []
