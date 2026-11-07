@@ -697,12 +697,11 @@ create policy shares_creator_delete on public.expense_shares for delete
 
 create policy payments_member_select on public.payments for select
   using (public.is_group_member(group_id));
-create policy payments_member_insert on public.payments for insert
-  with check (public.is_group_member(group_id) and (paid_by = (select auth.uid()) or public.is_group_admin(group_id)));
-create policy payments_member_update on public.payments for update
-  using (paid_by = (select auth.uid())) with check (paid_by = (select auth.uid()) and public.is_group_member(group_id));
-create policy payments_member_delete on public.payments for delete
-  using (paid_by = (select auth.uid()) or public.is_group_admin(group_id));
+-- Only the two people in a payment can record or delete it; no one edits a payment.
+create policy payments_party_insert on public.payments for insert
+  with check (public.is_group_member(group_id) and (select auth.uid()) in (paid_by, paid_to));
+create policy payments_party_delete on public.payments for delete
+  using ((select auth.uid()) in (paid_by, paid_to));
 
 create policy budgets_member_select on public.budgets for select
   using (public.is_group_member(group_id));
@@ -735,10 +734,12 @@ create policy personal_expenses_owner_delete on public.personal_expenses for del
 revoke all on function public.platform_counts() from public;
 revoke execute on function public.platform_counts() from anon;
 grant execute on function public.platform_counts() to authenticated;
+-- Supabase grants new functions to anon by default, so every callable function revokes it explicitly.
+revoke all on function public.accept_invite(text) from public, anon;
+revoke all on function public.create_expense(jsonb, jsonb) from public, anon;
+revoke all on function public.update_expense(uuid, jsonb, jsonb) from public, anon;
+revoke all on function public.group_member_profiles(uuid) from public, anon;
 grant execute on function public.accept_invite(text) to authenticated;
 grant execute on function public.create_expense(jsonb, jsonb) to authenticated;
 grant execute on function public.update_expense(uuid, jsonb, jsonb) to authenticated;
 grant execute on function public.group_member_profiles(uuid) to authenticated;
-revoke all on function public.group_member_profiles(uuid) from public;
-grant execute on function public.group_member_profiles(uuid) to authenticated;
-revoke execute on function public.group_member_profiles(uuid) from anon;
