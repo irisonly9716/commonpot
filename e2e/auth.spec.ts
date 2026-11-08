@@ -28,12 +28,17 @@ test.describe("US1 sign in safely", () => {
     await page.getByLabel("Email").fill(memberEmail);
     await page.getByLabel("Password").fill("wrong-password");
     await page.getByRole("button", { name: "Sign in" }).click();
-    const wrongPassword = await page.getByRole("alert").innerText();
+    const wrongPassword = await page
+      .locator("form")
+      .getByRole("alert")
+      .innerText();
 
     await page.getByLabel("Email").fill("nobody-here@example.com");
     await page.getByLabel("Password").fill("wrong-password");
     await page.getByRole("button", { name: "Sign in" }).click();
-    await expect(page.getByRole("alert")).toHaveText(wrongPassword);
+    await expect(page.locator("form").getByRole("alert")).toHaveText(
+      wrongPassword,
+    );
 
     expect(wrongPassword).toBe("Email or password is incorrect.");
   });
