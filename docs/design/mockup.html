@@ -1,8 +1,8 @@
 <!doctype html>
 <!--
-  Placeholder mockups for CommonPot (issue #5), phone width 390 px.
-  Open mockup.html#home, #add or #exact to see each screen; the PNGs next to this file are renders of those states.
-  Replace with the final mockups and DESIGN.md when #5 is done.
+  Mockups for CommonPot (issue #5), phone width 390 px. Colors and type come from DESIGN.md.
+  Open mockup.html#home, #add, #exact, #settle or #insights to see each screen.
+  The PNGs next to this file are renders of those states (scripts/render-mockups.mjs).
 -->
 <html lang="en">
   <head>
@@ -353,6 +353,120 @@
         border-radius: var(--radius);
         padding: 4px 12px;
       }
+
+      /* settle up */
+      .pay {
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+      }
+      .pay:first-of-type {
+        border-top: 0;
+      }
+      .pay .who {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .pay .amt {
+        font-size: 20px;
+        font-weight: 650;
+        color: var(--owed);
+      }
+      .pay .after {
+        margin: 4px 0 10px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 16px;
+        border: 1px solid var(--primary);
+        border-radius: var(--radius);
+        background: var(--surface);
+        color: var(--primary);
+        font:
+          600 15px "Segoe UI",
+          system-ui,
+          sans-serif;
+      }
+      .done {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* insights */
+      .cat {
+        padding: 8px 0;
+      }
+      .cat .track {
+        height: 10px;
+        background: #ece9e2;
+        border-radius: 3px;
+        margin-top: 5px;
+      }
+      .cat .track > span {
+        display: block;
+        height: 100%;
+        background: var(--primary);
+        border-radius: 3px;
+      }
+      .trend {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+        align-items: end;
+        height: 150px;
+        padding-top: 8px;
+      }
+      .trend .col {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+        font-size: 12px;
+        color: var(--muted);
+        gap: 4px;
+      }
+      .trend .col > span.bar-v {
+        display: block;
+        width: 100%;
+        background: var(--primary);
+        border-radius: 3px 3px 0 0;
+      }
+      .trend .col.now > span.bar-v {
+        background: var(--accent);
+      }
+      .trend .col strong {
+        color: var(--ink);
+        font-size: 12px;
+      }
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 14px 20px 4px;
+      }
+      table.t {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      table.t th,
+      table.t td {
+        text-align: left;
+        padding: 7px 0;
+        border-top: 1px solid var(--line);
+      }
+      table.t td:last-child,
+      table.t th:last-child {
+        text-align: right;
+      }
+      table.t th {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 600;
+      }
     </style>
   </head>
   <body>
@@ -386,7 +500,7 @@
         </div>
         <div class="row" style="margin-top: 8px">
           <span class="small">Balances add up to $0.00</span
-          ><a class="link" href="#">Settle up</a>
+          ><a class="link" href="#settle">Settle up</a>
         </div>
       </section>
 
@@ -433,7 +547,7 @@
       <button class="fab">+ Add expense</button>
       <nav>
         <a class="on" href="#home">Home</a><a href="#">Expenses</a
-        ><a href="#">Insights</a><a href="#">My spending</a>
+        ><a href="#insights">Insights</a><a href="#">My spending</a>
       </nav>
     </div>
 
@@ -557,6 +671,152 @@
 
         <button class="save" type="button" disabled>Save expense</button>
       </form>
+    </div>
+
+    <!-- Screen 4: settle up -->
+    <div class="screen" id="settle">
+      <div class="top">
+        <a class="back" href="#home">Back</a>
+        <h1>Settle up</h1>
+      </div>
+      <section aria-labelledby="sug">
+        <h2 id="sug">Suggested payments</h2>
+        <p class="sub">
+          2 payments clear every balance in Maple St. Apartment.
+        </p>
+        <div class="pay">
+          <div class="row">
+            <span class="who">Alex pays you</span
+            ><span class="amt">$28.00</span>
+          </div>
+          <p class="small after">Alex's balance goes from −$28.00 to $0.00.</p>
+          <button class="btn" type="button">Record payment</button>
+        </div>
+        <div class="pay">
+          <div class="row">
+            <span class="who">Sam pays you</span><span class="amt">$14.50</span>
+          </div>
+          <p class="small after">Sam's balance goes from −$14.50 to $0.00.</p>
+          <button class="btn" type="button">Record payment</button>
+        </div>
+        <p class="note">
+          Recording a payment only marks it as paid in CommonPot. CommonPot
+          never moves money.
+        </p>
+      </section>
+      <section aria-labelledby="rec">
+        <h2 id="rec">Recorded this month</h2>
+        <div class="balance">
+          <span>Sam paid you</span><span class="done">$40.00 · 1h ago</span>
+        </div>
+      </section>
+      <nav>
+        <a class="on" href="#home">Home</a><a href="#">Expenses</a
+        ><a href="#insights">Insights</a><a href="#">My spending</a>
+      </nav>
+    </div>
+
+    <!-- Screen 5: insights -->
+    <div class="screen" id="insights">
+      <header>
+        <div class="row">
+          <div>
+            <div class="eyebrow">Maple St. Apartment</div>
+            <h1>Insights</h1>
+          </div>
+        </div>
+      </header>
+      <div class="toolbar">
+        <div class="seg" role="radiogroup" aria-label="Whose spending">
+          <span role="radio" aria-checked="false">Me</span
+          ><span class="on" role="radio" aria-checked="true">Group</span>
+        </div>
+        <div class="grid2">
+          <div class="field">October 2026 ▾</div>
+          <div class="seg" role="radiogroup" aria-label="View">
+            <span class="on" role="radio" aria-checked="true">Chart</span
+            ><span role="radio" aria-checked="false">Table</span>
+          </div>
+        </div>
+      </div>
+      <section aria-labelledby="bycat">
+        <div class="row">
+          <h2 id="bycat">By category</h2>
+          <span class="small">Total $555.00</span>
+        </div>
+        <div class="cat">
+          <div class="row">
+            <strong>Groceries</strong><span>$336.00 · 61%</span>
+          </div>
+          <div class="track"><span style="width: 61%"></span></div>
+        </div>
+        <div class="cat">
+          <div class="row">
+            <strong>Utilities</strong><span>$96.00 · 17%</span>
+          </div>
+          <div class="track"><span style="width: 17%"></span></div>
+        </div>
+        <div class="cat">
+          <div class="row">
+            <strong>Dining out</strong><span>$58.00 · 10%</span>
+          </div>
+          <div class="track"><span style="width: 10%"></span></div>
+        </div>
+        <div class="cat">
+          <div class="row">
+            <strong>Transport</strong><span>$40.00 · 7%</span>
+          </div>
+          <div class="track"><span style="width: 7%"></span></div>
+        </div>
+        <div class="cat">
+          <div class="row"><strong>Other</strong><span>$25.00 · 5%</span></div>
+          <div class="track"><span style="width: 5%"></span></div>
+        </div>
+      </section>
+      <section aria-labelledby="trend">
+        <div class="row">
+          <h2 id="trend">Last 6 months</h2>
+          <span class="small">Group total</span>
+        </div>
+        <div
+          class="trend"
+          role="img"
+          aria-label="Group spending by month, May to October: 410, 455, 390, 520, 480 and 555 dollars"
+        >
+          <div class="col">
+            <strong>$410</strong
+            ><span class="bar-v" style="height: 74%"></span>May
+          </div>
+          <div class="col">
+            <strong>$455</strong
+            ><span class="bar-v" style="height: 82%"></span>Jun
+          </div>
+          <div class="col">
+            <strong>$390</strong
+            ><span class="bar-v" style="height: 70%"></span>Jul
+          </div>
+          <div class="col">
+            <strong>$520</strong
+            ><span class="bar-v" style="height: 94%"></span>Aug
+          </div>
+          <div class="col">
+            <strong>$480</strong
+            ><span class="bar-v" style="height: 86%"></span>Sep
+          </div>
+          <div class="col now">
+            <strong>$555</strong
+            ><span class="bar-v" style="height: 100%"></span>Oct
+          </div>
+        </div>
+        <p class="note">
+          October is the highest month so far. Switch to Table for exact
+          numbers.
+        </p>
+      </section>
+      <nav>
+        <a href="#home">Home</a><a href="#">Expenses</a
+        ><a class="on" href="#insights">Insights</a><a href="#">My spending</a>
+      </nav>
     </div>
   </body>
 </html>
