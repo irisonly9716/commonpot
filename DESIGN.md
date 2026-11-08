@@ -17,8 +17,8 @@ colors:
   owed: "#0F5C5A"
   owes: "#9B2C2C"
   warn: "#8A5A00"
-  disabled: "#C9C4BA"
-  on-disabled: "#6F6A61"
+  disabled: "#E4E0D8"
+  on-disabled: "#565E6A"
 typography:
   display:
     fontFamily: system-ui, -apple-system, Segoe UI, sans-serif
@@ -104,6 +104,16 @@ components:
     rounded: "{rounded.md}"
     height: 44px
     padding: 12px
+  button-primary-disabled:
+    backgroundColor: "{colors.disabled}"
+    textColor: "{colors.on-disabled}"
+    typography: "{typography.button}"
+    rounded: "{rounded.md}"
+    height: 48px
+    padding: 12px
+  divider:
+    backgroundColor: "{colors.line}"
+    height: 1px
   input:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -188,7 +198,7 @@ The palette is a warm paper neutral, one deep teal, one clay accent, and two sta
 - **Surface (#FFFFFF):** sections, cards, form fields and the bottom navigation.
 - **Ink (#1F2A37):** headings and body text, 14.5:1 on surface.
 - **Muted (#5D6673):** captions, labels and secondary text, 5.3:1 on paper and 5.8:1 on surface. Do not use anything lighter for text.
-- **Line (#DEDAD2):** 1px dividers between sections and rows.
+- **Line (#DEDAD2):** 1px dividers between sections and rows (the `divider` component).
 - **Track (#ECE9E2):** the empty part of a budget bar.
 - **Primary (#0F5C5A):** deep teal for structure and trust: links, selected controls, the progress of a healthy budget and the avatar text. 7.8:1 on surface.
 - **Primary soft (#E3EFED):** a pale teal behind avatars.
@@ -196,7 +206,7 @@ The palette is a warm paper neutral, one deep teal, one clay accent, and two sta
 - **Owed (#0F5C5A):** an amount that someone owes you. Always paired with a plus sign and the words "owes you" or "you are owed".
 - **Owes (#9B2C2C):** an amount that you owe, and error text. Always paired with a minus sign or the words "you owe". 7.5:1 on surface.
 - **Warn (#8A5A00):** a budget past its 80% alert. Always paired with the words "Past the 80% alert". 5.9:1 on surface.
-- **Disabled (#C9C4BA) and on-disabled (#6F6A61):** a button that cannot be used yet, such as Save while an exact split is $4.00 short. Disabled controls are exempt from the contrast rule, and the reason is always written next to the button.
+- **Disabled (#E4E0D8) and on-disabled (#565E6A):** a button that cannot be used yet, such as Save while an exact split is $4.00 short. The text is 5.0:1 on its background, so it stays readable, and the reason the button is off is always written next to it.
 
 Color never carries meaning alone: owed and owes use signs and words, and budget states use words.
 
