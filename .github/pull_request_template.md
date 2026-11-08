@@ -7,6 +7,7 @@ Closes #
 ## How it was tested
 
 <!-- Which tests were added (unit / integration / E2E), the commands you ran, and what you checked by hand. -->
+
 - [ ] Failing tests were committed before the implementation (`test(...)` commit before `feat(...)`)
 - [ ] `npm run check` passes locally
 - [ ] Screenshots attached for UI changes

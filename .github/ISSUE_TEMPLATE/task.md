@@ -11,8 +11,8 @@ labels: chore
 
 ## Acceptance criteria
 
-- [ ] 
-- [ ] 
+- [ ]
+- [ ]
 
 ## Estimate
 
