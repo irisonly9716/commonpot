@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation";
+
 import { ExpensesPage } from "@/components/expenses/expenses-page";
 import { getExpensePageData } from "@/lib/data/expenses";
 
@@ -12,6 +14,7 @@ export default async function GroupExpensesPage({ params }: PageProps) {
   if (!data.user) {
     return <p>Sign in to view this group&apos;s expenses.</p>;
   }
+  if (!data.group) notFound();
 
   return (
     <ExpensesPage

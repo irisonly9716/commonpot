@@ -84,7 +84,7 @@ Key patterns:
 
 - **Route handler shape:** validate input with Zod → get the user from the session or the `Authorization: Bearer` token → check permission → call `lib/data` and `lib/domain` → return JSON. Errors go through one helper and always look like `{ "error": { "code": "...", "message": "..." } }` with the right status (400, 401, 403, 404, 409, 422).
 - **One write path:** UI mutations call `/api/v1` (no Server Actions), so permissions are checked in one place. Server Components may read through `lib/data` with the user's Supabase client, so RLS still applies.
-- **Money:** integer cents everywhere (`amountCents`). Format only for display with `formatMoney(cents, currency)` (`Intl.NumberFormat`); messages shown to users never contain raw cents.
+- **Money:** integer cents everywhere (`amountCents`). Format only for display with `formatMoney(cents, currency)` (`Intl.NumberFormat`); messages shown to users never contain raw cents. An equal split gives leftover cents one at a time to members sorted by user id.
 - **Derived numbers:** balances, budget progress and personal totals are calculated by `lib/domain` from expenses and payments, never stored or edited by hand.
 - **Real time:** client components subscribe to a group through one hook, `useGroupRealtime(groupId)`, update state from events, show "Reconnecting…" while disconnected, and unsubscribe on unmount.
 
@@ -186,8 +186,7 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 **Accessibility (WCAG 2.1 AA)**
 
 - Every input has a visible `<label>`; error messages are linked with `aria-describedby`. Everything works by keyboard with a visible focus ring; dialogs trap focus and give it back when they close.
-- Text contrast is at least 4.5:1, touch targets at least 44 px, and color is never the only signal (owes / is owed, budget states).
-- Every chart has a table view; live updates are announced with `aria-live="polite"`. Critical axe violations fail CI.
+- Text contrast is at least 4.5:1, touch targets at least 44 px, and color is never the only signal (owes / is owed, budget states). Every chart has a table view; live updates are announced with `aria-live="polite"`. Critical axe violations fail CI.
 
 ## Changelog
 
@@ -197,3 +196,4 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 - v2 · 2026-10-30 · Arianna · After the before/after test on #8: cover every acceptance criterion, Zod for all validation, no raw cents in messages, describe the placeholder mockups (#20).
 - v3 · 2026-11-07 · Arianna · Formatted with Prettier and merged short bullets to stay under 200 lines; no rules removed (#1).
 - v4 · 2026-11-07 · Arianna · `@hookform/resolvers` is now 7.0.x, the latest stable release that works with Zod 4 and React Hook Form 7 (#26).
+- v5 · 2026-11-09 · Arianna · Equal splits give leftover cents to members sorted by user id, so the result doesn't depend on list order (#29).
