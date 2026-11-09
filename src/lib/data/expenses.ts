@@ -29,6 +29,7 @@ export async function getExpensePageData(groupId: string) {
   if (!user) {
     return {
       user: null,
+      group: null,
       currency: "USD",
       members: [],
       categories: [],
@@ -70,6 +71,7 @@ export async function getExpensePageData(groupId: string) {
 
   return {
     user,
+    group: groupResult.data,
     currency: groupResult.data?.currency ?? "USD",
     members: (membersResult.data ?? []).map((member) => ({
       id: member.id,

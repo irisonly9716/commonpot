@@ -37,10 +37,16 @@ export function splitEqually(
 
   const baseCents = Math.floor(amountCents / memberIds.length);
   const leftoverCents = amountCents % memberIds.length;
+  // Leftover cents go one at a time to members sorted by user id, so the
+  // result doesn't depend on the order the members were listed in.
+  const leftoverRank = new Map(
+    [...memberIds].sort().map((userId, rank) => [userId, rank]),
+  );
 
-  return memberIds.map((userId, index) => ({
+  return memberIds.map((userId) => ({
     userId,
-    amountCents: baseCents + (index < leftoverCents ? 1 : 0),
+    amountCents:
+      baseCents + ((leftoverRank.get(userId) ?? 0) < leftoverCents ? 1 : 0),
   }));
 }
 
