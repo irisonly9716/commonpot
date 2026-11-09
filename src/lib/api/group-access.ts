@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getAuthenticatedSupabase } from "@/lib/api/auth";
 import { apiError } from "@/lib/api/errors";
 import type { Database } from "@/lib/db/database.types";
+import type { GroupRole } from "@/lib/domain/expenses";
 
 export type GroupRouteContext = {
   params: Promise<{ groupId: string }>;
@@ -15,6 +16,7 @@ export type GroupAccess =
       supabase: SupabaseClient<Database>;
       user: User;
       groupId: string;
+      role: GroupRole;
     }
   | { ok: false; response: Response };
 
@@ -44,7 +46,7 @@ export async function requireGroupMember(
 
   const { data, error } = await authenticated.supabase
     .from("group_members")
-    .select("user_id")
+    .select("role")
     .eq("group_id", groupId)
     .eq("user_id", authenticated.user.id)
     .maybeSingle();
@@ -61,7 +63,7 @@ export async function requireGroupMember(
     };
   }
 
-  return { ok: true, ...authenticated, groupId };
+  return { ok: true, ...authenticated, groupId, role: data.role };
 }
 
 export function hasJsonBody(request: Request): boolean {
