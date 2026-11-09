@@ -20,7 +20,7 @@ CommonPot is a web app where a household, roommates or any small group share one
 
 ### Tech stack
 
-<!-- Checked on npm, nodejs.org and Vercel's docs on 2026-10-29. "Latest stable" = newest release that works with the stack:
+<!-- Checked on npm, nodejs.org and Vercel's docs on 2026-10-29 (@hookform/resolvers rechecked 2026-11-07). "Latest stable" = newest release that works with the stack:
   TypeScript stays on 6.0 (typescript-eslint supports < 6.1); ESLint stays on 9 (eslint-config-next's plugins support ≤ 9). -->
 
 | Area                      | Choice                                                                                                 | Version                                  |
@@ -31,7 +31,7 @@ CommonPot is a web app where a household, roommates or any small group share one
 | Styling                   | Tailwind CSS (theme generated from DESIGN.md) + shadcn/ui                                              | 4.3.x / CLI 4.x                          |
 | Backend                   | Next.js route handlers under `src/app/api/v1`                                                          | —                                        |
 | Database, auth, real time | Supabase (PostgreSQL, Auth with JWT, Realtime): `@supabase/supabase-js`, `@supabase/ssr`, Supabase CLI | 2.118.x / 0.12.x / 2.122.1               |
-| Validation and forms      | Zod, React Hook Form + `@hookform/resolvers`                                                           | 4.6.x / 7.91.x / 6.0.x                   |
+| Validation and forms      | Zod, React Hook Form + `@hookform/resolvers`                                                           | 4.6.x / 7.91.x / 7.0.x                   |
 | Charts                    | Recharts                                                                                               | 3.10.x                                   |
 | API docs                  | OpenAPI 3.1 in `docs/api/openapi.yaml`, `swagger-ui-react`, Redocly CLI (lint)                         | 5.34.x / 2.72.x                          |
 | Tests                     | Vitest + `@vitest/coverage-v8`, React Testing Library, Playwright + `@axe-core/playwright`             | 5.0.x / 16.3.x / 1.64.x / 4.14.x         |
@@ -175,8 +175,7 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 
 - Don't add another UI kit, CSS-in-JS, a state library (Redux, Zustand), an ORM (Prisma, Drizzle), axios, moment or lodash.
 - Don't use Server Actions for mutations, floats for money, or `any`; don't write to Supabase from client components (writes go through `/api/v1`).
-- Don't edit AGENTS.md, DESIGN.md, `docs/PRD.md`, `.github/workflows/` or merged migrations unless the issue asks for it.
-- Don't run `git push --force`, deploy, or touch the production database.
+- Don't edit AGENTS.md, DESIGN.md, `docs/PRD.md`, `.github/workflows/` or merged migrations unless the issue asks for it, and don't run `git push --force`, deploy, or touch the production database.
 
 **Security**
 
@@ -197,3 +196,4 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 - v1 · 2026-10-30 · Arianna · First draft, based on PRD v0.2.
 - v2 · 2026-10-30 · Arianna · After the before/after test on #8: cover every acceptance criterion, Zod for all validation, no raw cents in messages, describe the placeholder mockups (#20).
 - v3 · 2026-11-07 · Arianna · Formatted with Prettier and merged short bullets to stay under 200 lines; no rules removed (#1).
+- v4 · 2026-11-07 · Arianna · `@hookform/resolvers` is now 7.0.x, the latest stable release that works with Zod 4 and React Hook Form 7 (#26).
