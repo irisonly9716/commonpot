@@ -65,16 +65,17 @@ export function checkExactSplit(
 
 export type GroupRole = "admin" | "member";
 
+/** Who is acting; without a role they get no admin rights. */
 export type ExpenseActor = {
   userId: string;
-  role: GroupRole;
+  role?: GroupRole;
 };
 
 type LoggedExpense = {
   createdBy: string;
 };
 
-/** Only the person who logged an expense can edit it (US6). */
+/** Only the person who logged an expense can edit it, whatever their role (US6). */
 export function canEditExpense(
   actor: ExpenseActor,
   expense: LoggedExpense,
