@@ -154,8 +154,186 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "500":
           $ref: "#/components/responses/ServerError"
+  /api/v1/groups/{groupId}/expenses/{expenseId}:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/ExpenseId"
+    patch:
+      operationId: updateGroupExpense
+      summary: Edit an expense
+      description: >
+        Only the person who logged the expense can edit it, whatever their role.
+        The body replaces the whole expense, including its shares. The edit
+        appears in the activity feed and balances recalculate.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseCreate"
+      responses:
+        "200":
+          description: Expense updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id]
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    delete:
+      operationId: deleteGroupExpense
+      summary: Delete an expense
+      description: >
+        The person who logged the expense or a group admin can delete it. When
+        someone else deletes it, the person who logged it gets an in-app alert
+        saying who deleted it and what it was. The deletion appears in the
+        activity feed.
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Expense deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/v1/groups/{groupId}/activity:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    get:
+      operationId: listGroupActivity
+      summary: List the group's activity feed
+      description: >
+        The latest 50 added, edited and deleted expenses and recorded payments,
+        newest first, with who made each change.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Activity newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/v1/alerts:
+    get:
+      operationId: listMyAlerts
+      summary: List my in-app alerts
+      description: The signed-in user's latest 50 alerts, newest first.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: unread
+          in: query
+          required: false
+          description: Set to true to return only alerts that haven't been read.
+          schema:
+            type: string
+            enum: ["true", "false"]
+      responses:
+        "200":
+          description: Alerts newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/v1/alerts/{alertId}:
+    parameters:
+      - $ref: "#/components/parameters/AlertId"
+    patch:
+      operationId: updateMyAlert
+      summary: Mark one of my alerts as read or unread
+      description: Only the read state can change. Other users' alerts return 404.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlertUpdate"
+      responses:
+        "200":
+          description: Alert updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, readAt]
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  readAt:
+                    type: [string, "null"]
+                    format: date-time
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
 components:
   parameters:
+    ExpenseId:
+      name: expenseId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AlertId:
+      name: alertId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     UserId:
       name: userId
       in: path
@@ -320,6 +498,58 @@ components:
         note:
           type: string
           maxLength: 200
+    ActivityItem:
+      type: object
+      required:
+        [id, action, description, amountCents, actorId, actorName, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        action:
+          type: string
+          enum: [added, edited, deleted, payment_recorded]
+        description:
+          type: string
+          description: The expense description, or "Payer paid Payee" for a payment.
+        amountCents:
+          type: [integer, "null"]
+        actorId:
+          type: [string, "null"]
+          format: uuid
+        actorName:
+          type: string
+          description: Former member when the person has left the group.
+        createdAt:
+          type: string
+          format: date-time
+    Alert:
+      type: object
+      required: [id, groupId, kind, message, createdAt, readAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        groupId:
+          type: [string, "null"]
+          format: uuid
+        kind:
+          type: string
+          description: For example expense_deleted.
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: [string, "null"]
+          format: date-time
+    AlertUpdate:
+      type: object
+      required: [read]
+      properties:
+        read:
+          type: boolean
     ApiError:
       type: object
       required: [error]
