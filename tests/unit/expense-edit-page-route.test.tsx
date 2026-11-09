@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
   notFound: vi.fn(() => {
@@ -39,6 +39,8 @@ const editData = {
     shares: [{ userId: alex, amountCents: 1000 }],
   },
 };
+
+afterEach(cleanup);
 
 describe("US6 edit expense page", () => {
   it("returns a 404 for an expense id that isn't a UUID", async () => {
