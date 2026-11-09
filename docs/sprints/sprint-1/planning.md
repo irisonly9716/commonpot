@@ -2,12 +2,12 @@
 
 <!-- Draft by Arianna. Becomes final when both partners approve the PR that adds it. -->
 
-| | |
-| --- | --- |
-| Dates | [[2026-10-31]] → [[2026-11-04]] (milestone "Sprint 1") |
-| Product Owner | Arianna |
-| Scrum Master | Jay Choudhary |
-| Roles next sprint | PO and SM swap in Sprint 2 |
+|                   |                                                        |
+| ----------------- | ------------------------------------------------------ |
+| Dates             | [[2026-10-31]] → [[2026-11-04]] (milestone "Sprint 1") |
+| Product Owner     | Arianna                                                |
+| Scrum Master      | Jay Choudhary                                          |
+| Roles next sprint | PO and SM swap in Sprint 2                             |
 
 ## Sprint goal
 
@@ -15,18 +15,18 @@ A signed-in member can create a group, invite someone, log a split expense and s
 
 ## Selected issues
 
-| # | Issue | Estimate | Owner |
-| --- | --- | --- | --- |
-| 1 | Scaffold the Next.js app with TypeScript, Tailwind, ESLint, Prettier and Vitest | M | Arianna |
-| 2 | Set up the CI pipeline with tests and security scanning | M | Jay |
-| 3 | Deploy the app to Vercel with PR previews and per-environment variables | S | Jay |
-| 4 | Create the database schema, RLS policies and seed data | M | Arianna |
-| 5 | Add DESIGN.md and mockups for the main screens | M | Jay |
-| 6 | Let users sign up, sign in and sign out (US1) | M | Jay |
-| 7 | Create a group and invite members with a link (US2) | M | Jay |
-| 8 | Add an expense with an equal or exact split (US3) | M | Arianna |
-| 9 | Show balances and suggest settle-up payments (US5) | M | Arianna |
-| 10 | Edit and delete expenses with role checks and deletion alerts (US6) | M | Arianna |
+| #   | Issue                                                                           | Estimate | Owner   |
+| --- | ------------------------------------------------------------------------------- | -------- | ------- |
+| 1   | Scaffold the Next.js app with TypeScript, Tailwind, ESLint, Prettier and Vitest | M        | Arianna |
+| 2   | Set up the CI pipeline with tests and security scanning                         | M        | Jay     |
+| 3   | Deploy the app to Vercel with PR previews and per-environment variables         | S        | Jay     |
+| 4   | Create the database schema, RLS policies and seed data                          | M        | Arianna |
+| 5   | Add DESIGN.md and mockups for the main screens                                  | M        | Jay     |
+| 6   | Let users sign up, sign in and sign out (US1)                                   | M        | Jay     |
+| 7   | Create a group and invite members with a link (US2)                             | M        | Jay     |
+| 8   | Add an expense with an equal or exact split (US3)                               | M        | Arianna |
+| 9   | Show balances and suggest settle-up payments (US5)                              | M        | Arianna |
+| 10  | Edit and delete expenses with role checks and deletion alerts (US6)             | M        | Arianna |
 
 Estimates: S < 1 h, M 1–4 h. Each partner has 5 issues.
 

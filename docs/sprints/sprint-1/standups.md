@@ -4,6 +4,6 @@
 
 ## [[date]] · [[name]]
 
-- **Yesterday:** 
-- **Today:** 
-- **Need from you / blockers:** 
+- **Yesterday:**
+- **Today:**
+- **Need from you / blockers:**

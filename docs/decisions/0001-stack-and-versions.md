@@ -13,10 +13,11 @@ Next.js (App Router) + React + TypeScript + Tailwind CSS + Supabase (PostgreSQL,
 
 ## Version holds (checked 2026-10-29)
 
-| Package | Newest | Using | Reason |
-| --- | --- | --- | --- |
-| TypeScript | 7.0 | 6.0 | typescript-eslint supports TypeScript < 6.1 |
-| ESLint | 10 | 9.39 | the plugins inside eslint-config-next support ESLint 9 at most |
-| Node.js | 26 (LTS since 2026-10-28) | 26 | LTS and Vercel's default |
+| Package        | Newest                    | Using   | Reason                                                         |
+| -------------- | ------------------------- | ------- | -------------------------------------------------------------- |
+| TypeScript     | 7.0                       | 6.0     | typescript-eslint supports TypeScript < 6.1                    |
+| ESLint         | 10                        | 9.39    | the plugins inside eslint-config-next support ESLint 9 at most |
+| Node.js        | 26 (LTS since 2026-10-28) | 26      | LTS and Vercel's default                                       |
+| Supabase CLI 3 | 3.0.0                     | 2.122.1 | 3.0.0 is a new major; stay on the latest 2.x release for now   |
 
 Revisit these holds at each sprint retro.

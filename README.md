@@ -6,14 +6,14 @@ Shared expense accounts for households, roommates and small groups: log and spli
 
 ## Docs
 
-| What | Where |
-| --- | --- |
-| Product requirements | [docs/PRD.md](docs/PRD.md) |
-| Project proposal | [docs/proposal.md](docs/proposal.md) |
-| Rules for AI agents | [AGENTS.md](AGENTS.md) |
-| Design system and mockups | [DESIGN.md](DESIGN.md), [docs/design/](docs/design/) |
-| Decisions | [docs/decisions/](docs/decisions/) |
-| Sprints (planning, standups, retro) | [docs/sprints/](docs/sprints/) |
+| What                                | Where                                                |
+| ----------------------------------- | ---------------------------------------------------- |
+| Product requirements                | [docs/PRD.md](docs/PRD.md)                           |
+| Project proposal                    | [docs/proposal.md](docs/proposal.md)                 |
+| Rules for AI agents                 | [AGENTS.md](AGENTS.md)                               |
+| Design system and mockups           | [DESIGN.md](DESIGN.md), [docs/design/](docs/design/) |
+| Decisions                           | [docs/decisions/](docs/decisions/)                   |
+| Sprints (planning, standups, retro) | [docs/sprints/](docs/sprints/)                       |
 
 ## Stack
 
