@@ -2,12 +2,12 @@
 
 <!-- Draft by Arianna. Becomes final when both partners approve the PR that adds it. -->
 
-|               |                                                                         |
-| ------------- | ----------------------------------------------------------------------- |
-| Dates         | 2026-11-10 → 2026-11-12 (milestone "Sprint 2"); P2 is due on 2026-11-13 |
-| Product Owner | Jay Choudhary                                                           |
-| Scrum Master  | Arianna                                                                 |
-| Roles         | Swapped from Sprint 1, as planned                                       |
+|               |                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| Dates         | 2026-11-10 → 2026-11-12 (milestone "Sprint 2"); P2 is due on 2026-11-12 at 11:59 pm Pacific |
+| Product Owner | Jay Choudhary                                                                               |
+| Scrum Master  | Arianna                                                                                     |
+| Roles         | Swapped from Sprint 1, as planned                                                           |
 
 ## Sprint goal
 
@@ -24,7 +24,7 @@ Carried over from Sprint 1:
 | 6   | Let users sign up, sign in and sign out (US1)                           | M        | Jay     | Not started       |
 | 7   | Create a group and invite members with a link (US2)                     | M        | Jay     | Not started       |
 | 9   | Show balances and suggest settle-up payments (US5)                      | M        | Arianna | In review (#31)   |
-| 10  | Edit and delete expenses with role checks and deletion alerts (US6)     | M        | Arianna | Not started       |
+| 10  | Edit and delete expenses with role checks and deletion alerts (US6)     | M        | Arianna | In review (#34)   |
 | 29  | Fix expense API and page issues from the #28 review                     | S        | Arianna | In review (#30)   |
 
 New in Sprint 2:
@@ -52,13 +52,13 @@ Estimates: S < 1 h, M 1–4 h, L > 4 h. #12 is L, so it is split into two issues
 
 ## Schedule
 
-| Day        | Jay                                   | Arianna             | Both                                   |
-| ---------- | ------------------------------------- | ------------------- | -------------------------------------- |
-| 2026-11-10 | #6 sign-in, then #7 groups; #3 deploy | #10                 | Review and merge #30, #31 and #33      |
-| 2026-11-11 | #13, #5, #16                          | #11, #12            | Review each other's PRs the same day   |
-| 2026-11-12 | #15, #17, #18                         | #14                 | Feature freeze in the evening          |
-| 2026-11-13 | README deploy section, own reflection | #19, own reflection | E2E pass, 10-minute demo video, submit |
+| Day        | Jay                                                  | Arianna             | Both                                                                                                |
+| ---------- | ---------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------- |
+| 2026-11-10 | #6 sign-in, then #7 groups; #3 deploy                | #11                 | Review and merge #30, #31, #33 and #34                                                              |
+| 2026-11-11 | #13, #5, #16                                         | #12, #14            | Review each other's PRs the same day; first E2E tests once #6 and #7 merge                          |
+| 2026-11-12 | #15, #17, #18; README deploy section; own reflection | #19, own reflection | Feature freeze at 12:00 pm Pacific, then E2E pass, 10-minute demo video, submit by 11:59 pm Pacific |
 
+- The deadline is 2026-11-12 at 11:59 pm Pacific, as announced in class on 2026-11-03. Canvas shows due times in Eastern time, so it may read 2026-11-13 2:59 am; that is the same moment, not an extra day.
 - #6 and #7 come first: until there is a sign-in page and a group page, nothing can be tried in a browser and the E2E tests can't run. If #6 has no PR by the evening of 2026-11-10, we move it to whoever is free.
 - If we run out of time, we drop #18 (Could) first, then #17 and #15 (Should). The Must stories (#6, #7, #10, #11, #12, #13) and #3 are not dropped.
 
