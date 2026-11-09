@@ -10,6 +10,7 @@ import {
   splitEqually,
 } from "@/lib/domain/expenses";
 import { formatMoney } from "@/lib/format-money";
+import { getLocalDateString } from "@/lib/local-date";
 import {
   expenseCreateSchema,
   expenseFormSchema,
@@ -28,12 +29,7 @@ type ExpenseFormProps = {
   onCreated?: () => void;
 };
 
-export function getLocalDateString(date = new Date()): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
+export { getLocalDateString };
 
 function getDefaultValues(
   currentUserId: string,

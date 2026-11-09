@@ -46,6 +46,9 @@ export function ExpensesPage({
 
   return (
     <main>
+      <nav aria-label="Group pages">
+        <a href={`/groups/${groupId}/balances`}>Balances and settle up</a>
+      </nav>
       <ExpenseForm
         categories={categories}
         currency={currency}
