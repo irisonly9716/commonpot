@@ -12,7 +12,6 @@ const ids = {
   admin: "11111111-1111-4111-8111-111111111111",
   member: "22222222-2222-4222-8222-222222222222",
   third: "12121212-1212-4212-8212-121212121212",
-  otherGroupMember: "55555555-5555-4555-8555-555555555555",
 };
 const users = {
   admin: "admin@example.com",
@@ -232,7 +231,9 @@ describe("US5 balance breakdown API", () => {
 
   it("returns 404 for someone outside the group and 422 for a bad id", async () => {
     const token = await signIn(users.member);
-    expect((await breakdown(token, ids.otherGroupMember)).status).toBe(404);
+    // A random id, not otherGroupMember: database.test.ts lets that user join
+    // this group through an invite, so they may be a member by now.
+    expect((await breakdown(token, crypto.randomUUID())).status).toBe(404);
     expect((await breakdown(token, "not-a-uuid")).status).toBe(422);
   });
 });
