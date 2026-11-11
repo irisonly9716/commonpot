@@ -1,0 +1,51 @@
+import { getAuthenticatedSupabase } from "@/lib/api/auth";
+import { apiError } from "@/lib/api/errors";
+import { acceptInviteSchema } from "@/lib/validation/groups";
+
+const UNAVAILABLE = "This invite link has expired or was revoked.";
+
+/**
+ * Joins the signed-in user to the group the invite belongs to. Safe to call
+ * twice: the database function does nothing if they are already a member. An
+ * unknown, expired or revoked token all give the same 410, so the answer does
+ * not reveal which tokens exist.
+ */
+export async function POST(request: Request): Promise<Response> {
+  const authenticated = await getAuthenticatedSupabase(request);
+  if (!authenticated) {
+    return apiError("UNAUTHORIZED", "Authentication required", 401);
+  }
+
+  if (
+    request.headers.get("content-type")?.split(";")[0].trim() !==
+    "application/json"
+  ) {
+    return apiError(
+      "UNSUPPORTED_MEDIA_TYPE",
+      "Content-Type must be application/json",
+      415,
+    );
+  }
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return apiError("VALIDATION_ERROR", "Request body must be valid JSON", 422);
+  }
+  const parsed = acceptInviteSchema.safeParse(body);
+  if (!parsed.success) {
+    return apiError("VALIDATION_ERROR", "A token is required", 422);
+  }
+
+  const { data, error } = await authenticated.supabase.rpc("accept_invite", {
+    p_token: parsed.data.token,
+  });
+  if (error) {
+    // P0001 is the database function refusing: unknown, expired or revoked.
+    if (error.code === "P0001") {
+      return apiError("INVITE_UNAVAILABLE", UNAVAILABLE, 410);
+    }
+    return apiError("DATABASE_ERROR", "Could not join the group", 500);
+  }
+  return Response.json({ groupId: data });
+}
