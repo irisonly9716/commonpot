@@ -208,7 +208,9 @@ describe("US2 start a shared account: invite links", () => {
 
   it("gives 403 to a plain member and 404 to someone outside the group", async () => {
     const member = await signIn("member@example.com");
-    const outsider = await signIn("other-member@example.com");
+    // The site admin belongs to no group in the seed data. other-member is a
+    // plain member of the seed group, so they are not an outsider here.
+    const outsider = await signIn("site-admin@example.com");
     const asMember = await createInvite(
       request(
         "POST",
