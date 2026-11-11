@@ -7,6 +7,8 @@ info:
     name: MIT
     identifier: MIT
 servers:
+  - url: /
+    description: This deployment, so Try it out in Swagger UI calls the site you are on
   - url: https://api.commonpot.app
 paths:
   /api/v1/auth/token:
