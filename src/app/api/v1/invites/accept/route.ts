@@ -1,8 +1,7 @@
 import { getAuthenticatedSupabase } from "@/lib/api/auth";
 import { apiError } from "@/lib/api/errors";
+import { INVITE_UNAVAILABLE_MESSAGE } from "@/lib/groups/messages";
 import { acceptInviteSchema } from "@/lib/validation/groups";
-
-const UNAVAILABLE = "This invite link has expired or was revoked.";
 
 /**
  * Joins the signed-in user to the group the invite belongs to. Safe to call
@@ -43,7 +42,7 @@ export async function POST(request: Request): Promise<Response> {
   if (error) {
     // P0001 is the database function refusing: unknown, expired or revoked.
     if (error.code === "P0001") {
-      return apiError("INVITE_UNAVAILABLE", UNAVAILABLE, 410);
+      return apiError("INVITE_UNAVAILABLE", INVITE_UNAVAILABLE_MESSAGE, 410);
     }
     return apiError("DATABASE_ERROR", "Could not join the group", 500);
   }
