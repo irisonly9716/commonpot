@@ -9,6 +9,60 @@ info:
 servers:
   - url: https://api.commonpot.app
 paths:
+  /api/v1/auth/token:
+    post:
+      summary: Sign in and get a token
+      description: >-
+        Sign in with an email and password and get a token to send as
+        `Authorization: Bearer <token>` on every other endpoint. This is the only
+        endpoint that does not need a token. A wrong password and an unknown email
+        give the same 401, so the response never reveals which emails have accounts.
+      operationId: createToken
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRequest"
+      responses:
+        "200":
+          description: Signed in.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: The email or password is incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              example:
+                error:
+                  code: INVALID_CREDENTIALS
+                  message: Email or password is incorrect.
+        "415":
+          description: Content-Type must be application/json.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          description: Too many attempts. Try again later.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: Sign-in is unavailable right now.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
   /api/v1/groups/{groupId}/expenses:
     parameters:
       - $ref: "#/components/parameters/GroupId"
@@ -71,6 +125,40 @@ components:
         type: string
         format: uuid
   schemas:
+    TokenRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+    TokenResponse:
+      type: object
+      required: [tokenType, accessToken, refreshToken, expiresIn, user]
+      properties:
+        tokenType:
+          type: string
+          enum: [bearer]
+        accessToken:
+          type: string
+          description: "Send as `Authorization: Bearer <accessToken>`."
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+          description: Seconds until the access token expires.
+        user:
+          type: object
+          required: [id, email]
+          properties:
+            id:
+              type: string
+              format: uuid
+            email:
+              type: [string, "null"]
     ExpenseShare:
       type: object
       required: [userId, amountCents]
