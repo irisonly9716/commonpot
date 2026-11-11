@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { updateSession } from "./lib/auth/session";
+import { updateSession } from "@/lib/auth/session";
 
 export async function proxy(request: NextRequest) {
   return updateSession(request);

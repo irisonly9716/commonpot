@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GET } from "../../src/app/api/v1/me/route";
+import { GET } from "@/app/api/v1/me/route";
 
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";

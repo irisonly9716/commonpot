@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { signInErrorMessage } from "../../lib/auth/messages";
-import { createSupabaseBrowserClient } from "../../lib/db/supabase-browser";
+import { signInErrorMessage } from "@/lib/auth/messages";
+import { createSupabaseBrowserClient } from "@/lib/db/supabase-browser";
 import {
   signInSchema,
   type SignInInput,
   type SignInValues,
-} from "../../lib/validation/auth";
+} from "@/lib/validation/auth";
 
 export function SignInForm({ next }: { next: string }) {
   const router = useRouter();

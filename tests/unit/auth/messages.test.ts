@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  SIGN_IN_ERROR_MESSAGE,
-  signInErrorMessage,
-} from "../../../src/lib/auth/messages";
+import { SIGN_IN_ERROR_MESSAGE, signInErrorMessage } from "@/lib/auth/messages";
 
 describe("US1 sign in safely: one general sign-in error", () => {
   it("shows the same message for a wrong password and for an unknown email", () => {

@@ -1,5 +1,5 @@
-import { SignUpForm } from "../../components/auth/sign-up-form";
-import { safeRedirectPath } from "../../lib/auth/safe-redirect";
+import { SignUpForm } from "@/components/auth/sign-up-form";
+import { safeRedirectPath } from "@/lib/auth/safe-redirect";
 
 export default async function SignUpPage({
   searchParams,

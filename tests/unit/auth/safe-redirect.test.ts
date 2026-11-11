@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeRedirectPath } from "../../../src/lib/auth/safe-redirect";
+import { safeRedirectPath } from "@/lib/auth/safe-redirect";
 
 describe("US1 sign in safely: returning to the page the visitor wanted", () => {
   it("returns a same-site path as it is", () => {

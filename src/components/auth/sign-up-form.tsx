@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { createSupabaseBrowserClient } from "../../lib/db/supabase-browser";
+import { createSupabaseBrowserClient } from "@/lib/db/supabase-browser";
 import {
   signUpSchema,
   type SignUpInput,
   type SignUpValues,
-} from "../../lib/validation/auth";
+} from "@/lib/validation/auth";
 
 const SIGN_UP_ERROR =
   "We couldn't create your account. Check your details, or sign in if you already have one.";

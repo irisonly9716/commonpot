@@ -1,4 +1,4 @@
-import { SignOutButton } from "../../components/auth/sign-out-button";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 
 export default function GroupsPage() {
   // TODO(#7): list the user's groups, add "Create a group" and the invite link.

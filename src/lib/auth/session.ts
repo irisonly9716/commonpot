@@ -1,8 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSupabaseEnv } from "../db/env";
-import type { Database } from "../db/database.types";
-import { safeRedirectPath } from "./safe-redirect";
+import { getSupabaseEnv } from "@/lib/db/env";
+import type { Database } from "@/lib/db/database.types";
+import { safeRedirectPath } from "@/lib/auth/safe-redirect";
 
 const PUBLIC_PAGES = new Set(["/sign-in", "/sign-up"]);
 

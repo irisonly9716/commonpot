@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { signInSchema, signUpSchema } from "../../../src/lib/validation/auth";
+import { signInSchema, signUpSchema } from "@/lib/validation/auth";
 
 describe("US1 sign in safely: validation", () => {
   describe("signUpSchema", () => {
