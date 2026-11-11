@@ -27,11 +27,11 @@ People who live or travel together share many costs: rent, utilities, internet, 
 
 **Roles**
 
-| Role | Who | Can do |
-| --- | --- | --- |
-| Member | Anyone who joined a group | Log expenses; edit or delete their own; see balances, budgets and charts; record payments; leave the group; keep a private personal ledger |
-| Group admin | The group's creator and members they promote | Everything a member can, plus invite and remove members, change roles, delete any expense in the group, set budgets and categories |
-| Site admin | The platform operator | See users and groups with counts only (no amounts or expense details), suspend and reactivate accounts, manage the default category list |
+| Role        | Who                                          | Can do                                                                                                                                     |
+| ----------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Member      | Anyone who joined a group                    | Log expenses; edit or delete their own; see balances, budgets and charts; record payments; leave the group; keep a private personal ledger |
+| Group admin | The group's creator and members they promote | Everything a member can, plus invite and remove members, change roles, delete any expense in the group, set budgets and categories         |
+| Site admin  | The platform operator                        | See users and groups with counts only (no amounts or expense details), suspend and reactivate accounts, manage the default category list   |
 
 Permissions are enforced on the server (API checks and database row-level security), not only by hiding buttons. A personal ledger is visible only to its owner.
 
@@ -39,14 +39,14 @@ Permissions are enforced on the server (API checks and database row-level securi
 
 **Goal:** a group always agrees on what was spent, who owes whom and how close it is to its budgets, without one person doing the bookkeeping, and each person knows what they spend in total each month.
 
-| Metric | Target | How we measure it |
-| --- | --- | --- |
-| New users who create a group, invite someone and log a split expense without help | ≥ 4 of 5, each in ≤ 3 min | Usability test with 5 target users |
-| Time for a new expense to appear on another member's screen | ≤ 2 s | Playwright E2E test with two browser sessions |
-| Groups whose member balances add up to exactly zero | 100% | Unit and integration tests on the balance logic |
-| Public API endpoints described in the OpenAPI spec | 100% | Spec lint and a contract test in CI |
-| Line coverage of business logic (splits, balances, budgets, personal totals) | ≥ 80% | Vitest coverage report in CI |
-| Accessibility of the main pages | Lighthouse ≥ 90, no critical axe violations | Lighthouse and axe checks in CI |
+| Metric                                                                            | Target                                      | How we measure it                               |
+| --------------------------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------- |
+| New users who create a group, invite someone and log a split expense without help | ≥ 4 of 5, each in ≤ 3 min                   | Usability test with 5 target users              |
+| Time for a new expense to appear on another member's screen                       | ≤ 2 s                                       | Playwright E2E test with two browser sessions   |
+| Groups whose member balances add up to exactly zero                               | 100%                                        | Unit and integration tests on the balance logic |
+| Public API endpoints described in the OpenAPI spec                                | 100%                                        | Spec lint and a contract test in CI             |
+| Line coverage of business logic (splits, balances, budgets, personal totals)      | ≥ 80%                                       | Vitest coverage report in CI                    |
+| Accessibility of the main pages                                                   | Lighthouse ≥ 90, no critical axe violations | Lighthouse and axe checks in CI                 |
 
 ## 5. User stories and acceptance criteria
 
@@ -187,16 +187,16 @@ Priorities use MoSCoW.
 
 ## 7. Technical requirements
 
-| Area | Requirement |
-| --- | --- |
-| Stack | Next.js (App Router) + TypeScript + Tailwind CSS; Supabase (PostgreSQL, Auth, Realtime); deployed on Vercel. Latest stable versions, checked before each install. |
-| Auth | Supabase Auth with email and password; JWT access tokens for the web app and the public API. |
-| Real time | Supabase Realtime on expenses, payments and in-app alerts (budgets and deletions), filtered to the groups a user belongs to. |
-| Data | Schema changes only through migration files, plus a seed script that every developer and CI use. Money is stored as integer cents. Balances and personal totals are calculated from expenses and payments, not stored by hand. |
-| Security | Row-level security on every table; server-side permission checks in every API route; input validated on the server; secrets only in environment variables (`.env.example` lists names only); `npm audit` and CodeQL in CI. |
-| API | REST under `/api/v1`, documented in `docs/api/openapi.yaml` and served at `/api/docs`. |
-| Testing | TDD: a failing test is committed before each implementation. Unit and integration tests with Vitest, E2E with Playwright, including a two-user real-time test. |
-| CI/CD | GitHub Actions on every PR: lint and format → unit and integration tests → build → E2E, plus a security scan job. A preview deploy for every PR, production deploys from `main`, and separate environment variables for development, preview and production. |
+| Area      | Requirement                                                                                                                                                                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Stack     | Next.js (App Router) + TypeScript + Tailwind CSS; Supabase (PostgreSQL, Auth, Realtime); deployed on Vercel. Latest stable versions, checked before each install.                                                                                            |
+| Auth      | Supabase Auth with email and password; JWT access tokens for the web app and the public API.                                                                                                                                                                 |
+| Real time | Supabase Realtime on expenses, payments and in-app alerts (budgets and deletions), filtered to the groups a user belongs to.                                                                                                                                 |
+| Data      | Schema changes only through migration files, plus a seed script that every developer and CI use. Money is stored as integer cents. Balances and personal totals are calculated from expenses and payments, not stored by hand.                               |
+| Security  | Row-level security on every table; server-side permission checks in every API route; input validated on the server; secrets only in environment variables (`.env.example` lists names only); `npm audit` and CodeQL in CI.                                   |
+| API       | REST under `/api/v1`, documented in `docs/api/openapi.yaml` and served at `/api/docs`.                                                                                                                                                                       |
+| Testing   | TDD: a failing test is committed before each implementation. Unit and integration tests with Vitest, E2E with Playwright, including a two-user real-time test.                                                                                               |
+| CI/CD     | GitHub Actions on every PR: lint and format → unit and integration tests → build → E2E, plus a security scan job. A preview deploy for every PR, production deploys from `main`, and separate environment variables for development, preview and production. |
 
 ## 8. Out of scope (v1)
 

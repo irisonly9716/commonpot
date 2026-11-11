@@ -12,8 +12,8 @@
 
 ### Partner feedback
 
-- Arianna → Jay: 
-- Jay → Arianna: 
+- Arianna → Jay:
+- Jay → Arianna:
 
 ### Agent mistakes and rule changes
 

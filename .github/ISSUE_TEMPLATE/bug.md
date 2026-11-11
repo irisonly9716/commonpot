@@ -7,8 +7,8 @@ labels: bug
 
 ## Steps to reproduce
 
-1. 
-2. 
+1.
+2.
 
 ## Expected
 

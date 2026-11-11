@@ -1,0 +1,79 @@
+{
+  "name": "commonpot",
+  "version": "1.0.0",
+  "description": "Shared expense accounts for households, roommates and small groups: log and split expenses, see who owes whom, get budget alerts in real time, and keep a private personal ledger.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "26.x"
+  },
+  "scripts": {
+    "build": "next build",
+    "check": "npm run lint && npm run typecheck && npm test && npm run test:integration",
+    "db:types": "supabase gen types typescript --local > src/lib/db/database.types.ts",
+    "dev": "next dev",
+    "format": "prettier --write .",
+    "lint": "eslint . --max-warnings 0",
+    "api:lint": "redocly lint docs/api/openapi.yaml",
+    "prepare": "husky",
+    "start": "next start",
+    "test": "vitest run tests/unit",
+    "test:coverage": "vitest run tests/unit --coverage",
+    "test:e2e": "playwright test --pass-with-no-tests",
+    "test:integration": "vitest run tests/integration --environment node --fileParallelism=false",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/irisonly9716/commonpot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/irisonly9716/commonpot/issues"
+  },
+  "homepage": "https://github.com/irisonly9716/commonpot#readme",
+  "dependencies": {
+    "@hookform/resolvers": "^7.0.3",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
+    "next": "^16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-hook-form": "^7.91.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@redocly/cli": "^2.73.0",
+    "@tailwindcss/postcss": "^4.3.4",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "@vitest/coverage-v8": "^5.1.0",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "^16.4.5",
+    "husky": "^9.1.7",
+    "jsdom": "^30.1.3",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "supabase": "2.122.1",
+    "tailwindcss": "^4.3.4",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0"
+  },
+  "lint-staged": {
+    "*.{css,mjs,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
+  }
+}
