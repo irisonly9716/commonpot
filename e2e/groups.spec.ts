@@ -22,7 +22,7 @@ async function createGroup(page: Page, name: string) {
 
 async function createInviteLink(page: Page): Promise<string> {
   await page.getByRole("button", { name: "Create invite link" }).click();
-  const link = page.getByLabel("Invite link").first();
+  const link = page.getByRole("textbox", { name: "Invite link" }).first();
   await expect(link).toHaveValue(/\/invite\/.+/);
   return link.inputValue();
 }
@@ -67,11 +67,13 @@ test.describe("US2 start a shared account", () => {
     const inviteUrl = await createInviteLink(creator);
 
     await creator.getByRole("button", { name: "Revoke invite link" }).click();
-    await expect(creator.getByLabel("Invite link")).toHaveCount(0);
+    await expect(
+      creator.getByRole("textbox", { name: "Invite link" }),
+    ).toHaveCount(0);
 
     const guest = await signedInPage(browser, "third-member@example.com");
     await guest.goto(inviteUrl);
-    await expect(guest.getByRole("alert")).toHaveText(
+    await expect(guest.getByRole("main").getByRole("alert")).toHaveText(
       "This invite link has expired or was revoked.",
     );
   });
