@@ -2,12 +2,12 @@
 
 <!-- Draft by Arianna. Becomes final when both partners approve the PR that adds it. -->
 
-|               |                                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------- |
-| Dates         | 2026-11-10 → 2026-11-12 (milestone "Sprint 2"); P2 is due on 2026-11-12 at 11:59 pm Pacific |
-| Product Owner | Jay Choudhary                                                                               |
-| Scrum Master  | Arianna                                                                                     |
-| Roles         | Swapped from Sprint 1, as planned                                                           |
+|               |                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| Dates         | 2026-11-10 → 2026-11-15 (milestone "Sprint 2"); P2 is due on 2026-11-15 (moved from 2026-11-12) |
+| Product Owner | Jay Choudhary                                                                                   |
+| Scrum Master  | Arianna                                                                                         |
+| Roles         | Swapped from Sprint 1, as planned                                                               |
 
 ## Sprint goal
 
@@ -52,13 +52,19 @@ Estimates: S < 1 h, M 1–4 h, L > 4 h. #12 is L, so it is split into two issues
 
 ## Schedule
 
-| Day        | Jay                                                  | Arianna             | Both                                                                                                |
-| ---------- | ---------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------- |
-| 2026-11-10 | #6 sign-in, then #7 groups; #3 deploy                | #11                 | Review and merge #30, #31, #33 and #34                                                              |
-| 2026-11-11 | #13, #5, #16                                         | #12, #14            | Review each other's PRs the same day; first E2E tests once #6 and #7 merge                          |
-| 2026-11-12 | #15, #17, #18; README deploy section; own reflection | #19, own reflection | Feature freeze at 12:00 pm Pacific, then E2E pass, 10-minute demo video, submit by 11:59 pm Pacific |
+Re-planned on 2026-11-11, when the deadline moved to 2026-11-15. The first two rows are the original plan.
 
-- The deadline is 2026-11-12 at 11:59 pm Pacific, as announced in class on 2026-11-03. Canvas shows due times in Eastern time, so it may read 2026-11-13 2:59 am; that is the same moment, not an extra day.
+| Day        | Jay                                                           | Arianna        | Both                                                                                         |
+| ---------- | ------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------- |
+| 2026-11-10 | #6 sign-in, then #7 groups; #3 deploy                         | #11            | Review and merge #30, #31, #33 and #34                                                       |
+| 2026-11-11 | #13, #5, #16                                                  | #12, #14       | Review each other's PRs the same day; first E2E tests once #6 and #7 merge                   |
+| 2026-11-12 | Review fixes and rebases for #35, #40, #41 and #36; #3 deploy | #11            | Merge #35 → #40 → #41 → #36 as each one is approved                                          |
+| 2026-11-13 | #16, #15                                                      | #12            | E2E tests across sign-in, groups and expenses on the preview deploy                          |
+| 2026-11-14 | #17, #18; README deploy section                               | #14, #19       | Feature freeze in the evening                                                                |
+| 2026-11-15 | Own reflection                                                | Own reflection | E2E pass on the deployed app, 10-minute demo video, contribution log, Sprint 2 retro, submit |
+
+- The deadline moved from 2026-11-12 to 2026-11-15. Canvas shows due times in Eastern time, so check the exact time there: a time just after midnight Eastern is still the evening before in Pacific time.
+- #37, #38 and #39 were added to the milestone on 2026-11-10 and don't have an owner yet. They get owners at the next standup.
 - #6 and #7 come first: until there is a sign-in page and a group page, nothing can be tried in a browser and the E2E tests can't run. If #6 has no PR by the evening of 2026-11-10, we move it to whoever is free.
 - If we run out of time, we drop #18 (Could) first, then #17 and #15 (Should). The Must stories (#6, #7, #10, #11, #12, #13) and #3 are not dropped.
 
