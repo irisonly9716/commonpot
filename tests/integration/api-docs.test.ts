@@ -4,9 +4,7 @@ import { GET as getSpec } from "@/app/api/docs/openapi.yaml/route";
 
 describe("US13 connect other tools: the API documentation is public", () => {
   it("serves openapi.yaml without a token", async () => {
-    const response = await getSpec(
-      new Request("http://localhost/api/docs/openapi.yaml"),
-    );
+    const response = await getSpec();
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("yaml");
     const text = await response.text();
