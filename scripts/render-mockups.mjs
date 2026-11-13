@@ -27,7 +27,34 @@ const context = await browser.newContext({
 const page = await context.newPage();
 for (const [id, file] of screens) {
   await page.goto(`${page_url}#${id}`);
+  if (id === "insights") await checkTrendBars(page);
   await page.locator(`#${id}`).screenshot({ path: path.join(designDir, file) });
   console.log("wrote", file);
 }
 await browser.close();
+
+/**
+ * The 6-month bars must be drawn in proportion to their amounts. Percentage
+ * heights silently collapse to equal bars inside a grid row, so measure what
+ * was actually rendered and fail if it does not match the numbers.
+ */
+async function checkTrendBars(page) {
+  const bars = await page.$$eval(".trend .bar-v", (els) =>
+    els.map((el) => ({
+      value: Number(el.getAttribute("data-value")),
+      height: el.getBoundingClientRect().height,
+    })),
+  );
+  if (bars.length === 0) throw new Error("No trend bars found");
+  const tallest = Math.max(...bars.map((b) => b.height));
+  const largest = Math.max(...bars.map((b) => b.value));
+  for (const bar of bars) {
+    const expected = bar.value / largest;
+    const actual = bar.height / tallest;
+    if (!(Math.abs(expected - actual) <= 0.02)) {
+      throw new Error(
+        `Trend bar for $${bar.value} is ${(actual * 100).toFixed(0)}% of the tallest, expected ${(expected * 100).toFixed(0)}%`,
+      );
+    }
+  }
+}
