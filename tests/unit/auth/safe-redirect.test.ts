@@ -38,4 +38,9 @@ describe("US1 sign in safely: returning to the page the visitor wanted", () => {
   it("uses the given fallback", () => {
     expect(safeRedirectPath("https://evil.example", "/home")).toBe("/home");
   });
+
+  it("treats a repeated next value (an array) as missing instead of throwing", () => {
+    expect(safeRedirectPath(["/a", "/b"])).toBe("/groups");
+    expect(safeRedirectPath([])).toBe("/groups");
+  });
 });
