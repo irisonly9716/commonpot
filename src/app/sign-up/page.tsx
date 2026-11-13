@@ -4,7 +4,7 @@ import { safeRedirectPath } from "@/lib/auth/safe-redirect";
 export default async function SignUpPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string | string[] }>;
 }) {
   const { next } = await searchParams;
   return <SignUpForm next={safeRedirectPath(next)} />;

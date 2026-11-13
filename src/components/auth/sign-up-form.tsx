@@ -147,7 +147,10 @@ export function SignUpForm({ next }: { next: string }) {
 
       <p className="text-sm">
         Already have an account?{" "}
-        <Link href="/sign-in" className="underline">
+        <Link
+          href={`/sign-in?next=${encodeURIComponent(next)}`}
+          className="underline"
+        >
           Sign in
         </Link>
       </p>

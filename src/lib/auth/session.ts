@@ -48,12 +48,10 @@ export async function updateSession(
   }
 
   if (user && isPublic) {
-    const destination = request.nextUrl.clone();
-    destination.pathname = safeRedirectPath(
-      request.nextUrl.searchParams.get("next"),
-    );
-    destination.search = "";
-    return NextResponse.redirect(destination);
+    // Build the URL from the whole path, so the query string of next is kept
+    // (setting pathname alone would encode its "?" as "%3F").
+    const next = safeRedirectPath(request.nextUrl.searchParams.get("next"));
+    return NextResponse.redirect(new URL(next, request.url));
   }
 
   return response;

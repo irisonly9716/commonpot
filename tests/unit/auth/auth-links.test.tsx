@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { SignUpForm } from "@/components/auth/sign-up-form";
@@ -9,6 +9,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("US1 sign in safely: keeping the page the visitor wanted", () => {
+  // Testing Library only cleans up on its own when vitest globals are on.
+  afterEach(cleanup);
+
   it("passes next from sign-in to sign-up, so an invite link survives creating an account", () => {
     render(<SignInForm next="/invite/abc123" />);
     expect(
