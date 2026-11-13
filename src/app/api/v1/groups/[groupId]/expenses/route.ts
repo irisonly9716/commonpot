@@ -30,12 +30,12 @@ async function getMembership(
 }
 
 export async function GET(request: Request, context: RouteContext) {
-  const groupId = await getGroupId(context);
-  if (!groupId) return apiError("VALIDATION_ERROR", "Invalid group id", 422);
-
   const authenticated = await getAuthenticatedSupabase(request);
   if (!authenticated)
     return apiError("UNAUTHORIZED", "Authentication required", 401);
+
+  const groupId = await getGroupId(context);
+  if (!groupId) return apiError("VALIDATION_ERROR", "Invalid group id", 422);
 
   if (!(await getMembership(authenticated, groupId, authenticated.user.id))) {
     return apiError("NOT_FOUND", "Group not found", 404);
@@ -72,12 +72,12 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 export async function POST(request: Request, context: RouteContext) {
-  const groupId = await getGroupId(context);
-  if (!groupId) return apiError("VALIDATION_ERROR", "Invalid group id", 422);
-
   const authenticated = await getAuthenticatedSupabase(request);
   if (!authenticated)
     return apiError("UNAUTHORIZED", "Authentication required", 401);
+
+  const groupId = await getGroupId(context);
+  if (!groupId) return apiError("VALIDATION_ERROR", "Invalid group id", 422);
 
   if (!(await getMembership(authenticated, groupId, authenticated.user.id))) {
     return apiError("NOT_FOUND", "Group not found", 404);
