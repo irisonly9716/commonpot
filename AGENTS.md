@@ -113,8 +113,7 @@ Key patterns:
 
 - **PRD:** [docs/PRD.md](docs/PRD.md) has US1–US13 with acceptance criteria, the roles and the out-of-scope list. The acceptance criteria are the spec: build what they say and nothing from the out-of-scope list.
 - **Design system:** UI work follows [DESIGN.md](DESIGN.md) (colors, type, spacing, components). Use its tokens through the Tailwind theme; never hard-code colors or font sizes.
-- **Mockups:** `docs/design/`, one image per screen. They are the source of truth for layout. If a mockup and the PRD disagree, follow the PRD and point out the difference.
-  - Placeholders until #5: `group-home.png` (balance first, then budgets, live feed, Add expense button), `add-expense-equal.png` (shares listed per member), `add-expense-exact.png` (amount left shown live, Save disabled until it is $0.00). Source: `mockup.html`.
+- **Mockups:** `docs/design/`, one image per screen, named in the table below. They are the source of truth for layout. If a mockup and the PRD disagree, follow the PRD and point out the difference.
 - **Avoid the generic AI look:** no colored side stripes on cards, no rows of three identical cards, no oversized rounded corners, no gradients that DESIGN.md doesn't define.
 - **Mobile first:** one column on phones, two columns from 1024 px.
 
@@ -122,10 +121,10 @@ Screens and key components:
 
 | Screen             | Components                                                   | Expected behavior                                                                                                                                                                                                              |
 | ------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Group home         | `BalanceSummary`, `BudgetBar`, `ActivityFeed`, "Add expense" | What I owe or am owed comes first, without scrolling, in words and +/− signs, not color alone. The feed is newest first and updates live.                                                                                      |
-| Add / edit expense | `ExpenseForm`, `SplitEditor`                                 | Amount, description, category, date, paid by (default me), shared by (default everyone). Equal or exact split; an exact split shows the amount left live and can't be saved until it is 0. Errors appear next to their fields. |
-| Settle up          | `SettleUpList`, `PaymentForm`                                | Suggested payments; "Record payment" updates both balances. Never suggests that money is sent.                                                                                                                                 |
-| Insights           | `SpendingChart`, `ChartTable`                                | Me and Group views, a month picker, a chart by category and a 6-month trend; every chart has a table toggle.                                                                                                                   |
+| Group home         | `BalanceSummary`, `BudgetBar`, `ActivityFeed`, "Add expense" | What I owe or am owed comes first, without scrolling, in words and +/− signs, not color alone. The feed is newest first and updates live. Mockup: `group-home.png`. |
+| Add / edit expense | `ExpenseForm`, `SplitEditor`                                 | Amount, description, category, date, paid by (default me), shared by (default everyone). Equal or exact split; an exact split shows the amount left live and can't be saved until it is 0. Errors appear next to their fields. Mockups: `add-expense-equal.png` (leftover cents explained), `add-expense-exact.png` (amount left shown, Save disabled). |
+| Settle up          | `SettleUpList`, `PaymentForm`                                | Suggested payments; "Record payment" updates both balances. Never suggests that money is sent. Mockup: `settle-up.png` (one block per payment). |
+| Insights           | `SpendingChart`, `ChartTable`                                | Me and Group views, a month picker, a chart by category and a 6-month trend; every chart has a table toggle. Mockup: `insights.png`. |
 | My spending        | `LedgerList`, `SpendingChart`                                | Private ledger plus my shares from every group; totals by category and by source.                                                                                                                                              |
 | Group settings     | `MemberList`, `InviteLink`, `CategoryList`, `BudgetForm`     | Admin-only controls are not rendered for members.                                                                                                                                                                              |
 | Site admin         | `AdminUserTable`, `AdminGroupTable`                          | Counts and account status only, never amounts.                                                                                                                                                                                 |
@@ -197,3 +196,4 @@ Permissions (enforced in API routes and RLS, not only by hiding buttons):
 - v3 · 2026-11-07 · Arianna · Formatted with Prettier and merged short bullets to stay under 200 lines; no rules removed (#1).
 - v4 · 2026-11-07 · Arianna · `@hookform/resolvers` is now 7.0.x, the latest stable release that works with Zod 4 and React Hook Form 7 (#26).
 - v5 · 2026-11-09 · Arianna · Equal splits give leftover cents to members sorted by user id, so the result doesn't depend on list order (#29).
+- v6 · 2026-11-10 · Jay · The mockups are final and named in the screens table; DESIGN.md added (#5).
