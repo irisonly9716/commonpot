@@ -951,33 +951,6 @@ components:
         createdAt:
           type: string
           format: date-time
-    Alert:
-      type: object
-      required: [id, groupId, kind, message, createdAt, readAt]
-      properties:
-        id:
-          type: string
-          format: uuid
-        groupId:
-          type: [string, "null"]
-          format: uuid
-        kind:
-          type: string
-          description: For example expense_deleted.
-        message:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        readAt:
-          type: [string, "null"]
-          format: date-time
-    AlertUpdate:
-      type: object
-      required: [read]
-      properties:
-        read:
-          type: boolean
     PersonalExpenseInput:
       type: object
       required: [amountCents, description, category, expenseDate]
@@ -1062,6 +1035,33 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/CurrencySpending"
+    Alert:
+      type: object
+      required: [id, groupId, kind, message, createdAt, readAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        groupId:
+          type: [string, "null"]
+          format: uuid
+        kind:
+          type: string
+          description: For example expense_deleted.
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: [string, "null"]
+          format: date-time
+    AlertUpdate:
+      type: object
+      required: [read]
+      properties:
+        read:
+          type: boolean
     ApiError:
       type: object
       required: [error]
