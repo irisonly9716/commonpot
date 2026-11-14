@@ -98,9 +98,25 @@ describe("US8 see where the money goes", () => {
       ]);
     });
 
-    it("gives each row a whole-number percent of the total", () => {
+    it("gives each row a whole-number percent that adds up to 100", () => {
       const rows = spendingByCategory(expenses, { kind: "group" }, "2026-10");
-      expect(rows.map((r) => r.percent)).toEqual([78, 17, 4]);
+      // 78.3%, 17.4% and 4.3%: the leftover point goes to the largest remainder.
+      expect(rows.map((r) => r.percent)).toEqual([78, 18, 4]);
+      expect(rows.reduce((sum, r) => sum + r.percent, 0)).toBe(100);
+    });
+
+    it.each([
+      [[3333, 3333, 3334]],
+      [[1, 1, 1, 1, 1, 1, 1]],
+      [[5000, 2500, 2500]],
+      [[999, 1, 1]],
+      [[100]],
+    ])("makes the percents add up to 100 for %j", (amounts) => {
+      const many = amounts.map((cents, i) =>
+        expense(`e${i}`, "2026-10-05", cents, `Category ${i}`, [[me, cents]]),
+      );
+      const rows = spendingByCategory(many, { kind: "group" }, "2026-10");
+      expect(rows.reduce((sum, r) => sum + r.percent, 0)).toBe(100);
     });
 
     it("returns no rows for an empty month", () => {

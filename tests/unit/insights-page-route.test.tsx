@@ -84,8 +84,28 @@ describe("US8 insights page", () => {
     },
   );
 
-  it("does not offer a future month", async () => {
+  it("does not offer a month more than one ahead of the server's", async () => {
     await renderPage({ month: "2027-02" });
     expect(loadGroupSpending.mock.calls[0][2]).toBe("2026-11");
+  });
+
+  it("accepts the next month, for visitors whose date is ahead of UTC", async () => {
+    await renderPage({ month: "2026-12" });
+    expect(loadGroupSpending.mock.calls[0][2]).toBe("2026-12");
+  });
+
+  it("tells the view whether the month came from the address", async () => {
+    const withoutMonth = (await renderPage()) as {
+      props: { monthFromUrl: boolean };
+    };
+    expect(withoutMonth.props.monthFromUrl).toBe(false);
+    const withMonth = (await renderPage({ month: "2026-09" })) as {
+      props: { monthFromUrl: boolean };
+    };
+    expect(withMonth.props.monthFromUrl).toBe(true);
+    const badMonth = (await renderPage({ month: "banana" })) as {
+      props: { monthFromUrl: boolean };
+    };
+    expect(badMonth.props.monthFromUrl).toBe(false);
   });
 });

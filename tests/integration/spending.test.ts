@@ -1,7 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 
-import { POST } from "../../src/app/api/v1/groups/[groupId]/expenses/route";
+import {
+  GET as listExpenses,
+  POST,
+} from "../../src/app/api/v1/groups/[groupId]/expenses/route";
 import { loadGroupSpending } from "@/lib/data/spending";
 import type { Database } from "@/lib/db/database.types";
 import { monthTotal, spendingByCategory } from "@/lib/domain/spending";
@@ -66,34 +69,68 @@ async function addMarchExpense(adminToken: string, categoryId: string | null) {
 }
 
 describe("US8 spending for the insights page", () => {
-  it("matches the expense list for the same month", async () => {
+  it("matches what the expense list API returns for the same month", async () => {
     const token = await signIn("admin@example.com");
-    const supabase = clientFor(token);
     const month = "2026-11";
 
-    const spending = await loadGroupSpending(supabase, groupId, month, adminId);
-    expect(spending).not.toBeNull();
-
-    const { data: listed } = await supabase
-      .from("expenses")
-      .select("amount_cents")
-      .eq("group_id", groupId)
-      .gte("expense_date", `${month}-01`)
-      .lt("expense_date", "2026-12-01");
-    const listTotal = (listed ?? []).reduce(
-      (sum, row) => sum + row.amount_cents,
-      0,
+    // The list a member sees: the real GET /expenses route, summed by month.
+    const listResponse = await listExpenses(
+      new Request(`http://localhost/api/v1/groups/${groupId}/expenses`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      { params: Promise.resolve({ groupId }) },
     );
-
-    const total = monthTotal(spending!.expenses, { kind: "group" }, month);
+    expect(listResponse.status).toBe(200);
+    const listed = (await listResponse.json()) as Array<{
+      expenseDate: string;
+      amountCents: number;
+      shares: Array<{ userId: string; amountCents: number }>;
+    }>;
+    const inMonth = listed.filter((e) => e.expenseDate.startsWith(month));
+    const listTotal = inMonth.reduce((sum, e) => sum + e.amountCents, 0);
+    const myShare = inMonth
+      .flatMap((e) => e.shares)
+      .filter((share) => share.userId === adminId)
+      .reduce((sum, share) => sum + share.amountCents, 0);
     expect(listTotal).toBeGreaterThan(0);
-    expect(total).toBe(listTotal);
-    const rows = spendingByCategory(
-      spending!.expenses,
-      { kind: "group" },
+
+    const spending = await loadGroupSpending(
+      clientFor(token),
+      groupId,
       month,
+      adminId,
     );
+    expect(spending).not.toBeNull();
+    const group = { kind: "group" } as const;
+    expect(monthTotal(spending!.expenses, group, month)).toBe(listTotal);
+    expect(
+      monthTotal(spending!.expenses, { kind: "me", userId: adminId }, month),
+    ).toBe(myShare);
+    const rows = spendingByCategory(spending!.expenses, group, month);
     expect(rows.reduce((sum, row) => sum + row.amountCents, 0)).toBe(listTotal);
+  });
+
+  it("does not show another household's spending to a member of a different group", async () => {
+    // member@ belongs to the seed group, not to "Other household".
+    const otherGroup = "99999999-9999-4999-8999-999999999999";
+    const token = await signIn("member@example.com");
+    const memberId = await userIdOf(token);
+    expect(
+      await loadGroupSpending(
+        clientFor(token),
+        otherGroup,
+        "2026-11",
+        memberId,
+      ),
+    ).toBeNull();
+    // Even if the caller claims to be a member of it, RLS hides the rows.
+    const claimed = await loadGroupSpending(
+      clientFor(token),
+      otherGroup,
+      "2026-11",
+      "55555555-5555-4555-8555-555555555555",
+    );
+    expect(claimed).toBeNull();
   });
 
   it("counts my share, not what I paid, for each person", async () => {

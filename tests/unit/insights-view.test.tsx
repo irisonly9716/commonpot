@@ -6,14 +6,17 @@ import { InsightsView } from "@/components/insights/insights-view";
 import type { SpendingExpense } from "@/lib/domain/spending";
 
 const push = vi.fn();
+const replace = vi.fn();
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
+  useRouter: () => ({ push, replace }),
   usePathname: () => "/groups/g1/insights",
 }));
 
 afterEach(() => {
   cleanup();
   push.mockClear();
+  replace.mockClear();
+  vi.useRealTimers();
 });
 
 const me = "user-me";
@@ -47,14 +50,18 @@ const expenses: SpendingExpense[] = [
   },
 ];
 
-function renderView(month = "2026-10") {
+function renderView(
+  month = "2026-10",
+  extra: { monthFromUrl?: boolean; latestMonth?: string } = {},
+) {
   return render(
     <InsightsView
       groupName="Maple St. Apartment"
       currency="USD"
       currentUserId={me}
       month={month}
-      latestMonth="2026-10"
+      latestMonth={extra.latestMonth ?? "2026-10"}
+      monthFromUrl={extra.monthFromUrl ?? true}
       expenses={expenses}
     />,
   );
@@ -129,5 +136,49 @@ describe("US8 insights view", () => {
     renderView("2026-08");
     expect(screen.getByText("Total $0.00")).toBeVisible();
     expect(screen.getByText("No spending in August 2026.")).toBeVisible();
+  });
+
+  it("keeps the picker in step with an older month from the address", () => {
+    renderView("2025-03");
+    const picker = screen.getByLabelText("Month");
+    expect(picker).toHaveValue("2025-03");
+    const options = within(picker).getAllByRole("option");
+    expect(options).toHaveLength(13);
+    expect(options[0]).toHaveTextContent("October 2026");
+    expect(options.at(-1)).toHaveTextContent("March 2025");
+  });
+
+  describe("this month for the visitor, not the server", () => {
+    it("moves to the browser's month when none was chosen", () => {
+      vi.useFakeTimers();
+      // Local time on 1 December, while the server is still in November.
+      vi.setSystemTime(new Date(2026, 11, 1, 9, 0));
+      renderView("2026-11", { monthFromUrl: false, latestMonth: "2026-11" });
+      expect(replace).toHaveBeenCalledWith("/groups/g1/insights?month=2026-12");
+    });
+
+    it("lists the browser's month in the picker", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 11, 1, 9, 0));
+      renderView("2026-11", { monthFromUrl: false, latestMonth: "2026-11" });
+      const options = within(screen.getByLabelText("Month")).getAllByRole(
+        "option",
+      );
+      expect(options[0]).toHaveTextContent("December 2026");
+    });
+
+    it("does not move when the month came from the address", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 11, 1, 9, 0));
+      renderView("2026-11", { monthFromUrl: true, latestMonth: "2026-11" });
+      expect(replace).not.toHaveBeenCalled();
+    });
+
+    it("does not move when the browser agrees with the server", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 10, 14, 9, 0));
+      renderView("2026-11", { monthFromUrl: false, latestMonth: "2026-11" });
+      expect(replace).not.toHaveBeenCalled();
+    });
   });
 });
