@@ -45,7 +45,8 @@ test.describe("US12 keep the platform healthy", () => {
     ).toBeVisible();
     await expect(admin.getByRole("table", { name: "Groups" })).toBeVisible();
     await expect(admin.getByRole("main")).not.toContainText("$");
-    await expect(admin.getByRole("main")).not.toContainText("Groceries");
+    // The seed group has an 84.00 expense; no amount may show up here.
+    await expect(admin.getByRole("main")).not.toContainText("84.00");
   });
 
   test("suspending signs the user out on their next page, and reactivating lets them back in", async ({
