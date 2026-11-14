@@ -72,3 +72,12 @@ export function hasJsonBody(request: Request): boolean {
     "application/json"
   );
 }
+
+/** The 403 for a member who is not an admin, or null when they are one. */
+export function requireAdmin(
+  access: Extract<GroupAccess, { ok: true }>,
+): Response | null {
+  return access.role === "admin"
+    ? null
+    : apiError("FORBIDDEN", "Only group admins can do this", 403);
+}
