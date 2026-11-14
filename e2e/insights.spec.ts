@@ -95,12 +95,12 @@ test.describe("US8 see where the money goes", () => {
     await signInTo(
       page,
       "member@example.com",
-      `/groups/${groupId}/insights?month=2025-03`,
+      `/groups/${groupId}/insights?month=2020-01`,
     );
 
     const picker = page.getByRole("combobox", { name: "Month" });
-    await expect(picker).toHaveValue("2025-03");
-    await expect(page.getByText("No spending in March 2025.")).toBeVisible();
+    await expect(picker).toHaveValue("2020-01");
+    await expect(page.getByText("No spending in January 2020.")).toBeVisible();
   });
 
   test("opens on the visitor's own current month when none is given", async ({
