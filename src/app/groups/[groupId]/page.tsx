@@ -49,10 +49,12 @@ export default async function GroupPage({
         <p className="text-sm text-gray-700">Currency: {group.currency}</p>
       </div>
 
-      {/* TODO(#9): also link to the balances page once #31 merges. */}
-      <nav aria-label="Group pages">
+      <nav aria-label="Group pages" className="flex gap-4">
         <Link href={`/groups/${group.id}/expenses`} className="underline">
           Expenses
+        </Link>
+        <Link href={`/groups/${group.id}/balances`} className="underline">
+          Balances
         </Link>
       </nav>
 
