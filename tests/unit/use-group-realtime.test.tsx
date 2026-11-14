@@ -223,6 +223,19 @@ describe("US4 see changes as they happen: useGroupRealtime", () => {
     expect(onChange).toHaveBeenCalledTimes(2);
   });
 
+  it("waits for the network when it drops before a scheduled refetch runs", async () => {
+    const { onChange, channel } = await mountHook();
+    // SUBSCRIBED schedules the catch-up refetch; the network drops before it runs.
+    act(() => channel.report("SUBSCRIBED"));
+    act(() => setOnline(false));
+    waitForRefetch();
+    expect(onChange).not.toHaveBeenCalled();
+
+    act(() => setOnline(true));
+    waitForRefetch();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
   it("stops listening when the component unmounts", async () => {
     const { onChange, channel, unmount } = await mountHook();
     act(() => channel.report("SUBSCRIBED"));

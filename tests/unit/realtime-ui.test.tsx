@@ -127,7 +127,7 @@ describe("US4 see changes as they happen: expenses page", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
-  it("keeps the current list when the refetch fails", async () => {
+  it("keeps the current page when the network is down", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(
       new TypeError("Failed to fetch"),
     );
@@ -138,6 +138,8 @@ describe("US4 see changes as they happen: expenses page", () => {
     });
 
     expect(screen.getByText("Groceries")).toBeVisible();
+    // A server refresh would fail too and reload the whole page.
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it('shows "Reconnecting…" when the connection drops', () => {

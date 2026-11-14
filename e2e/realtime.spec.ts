@@ -22,9 +22,16 @@ async function openExpensesAs(browser: Browser, email: string) {
 }
 
 async function addExpense(page: Page, description: string) {
-  await page.getByLabel("Amount").fill("12.34");
-  await page.getByLabel("Description").fill(description);
-  await page.getByRole("button", { name: "Save expense" }).click();
+  // Exact names: the page also has an "Exact amounts" radio and, in a reused
+  // local database, expenses whose descriptions contain "Amount".
+  const form = page.locator("form.expense-form");
+  await form
+    .getByRole("textbox", { name: "Amount", exact: true })
+    .fill("12.34");
+  await form
+    .getByRole("textbox", { name: "Description", exact: true })
+    .fill(description);
+  await form.getByRole("button", { name: "Save expense" }).click();
   await expect(page.getByRole("article", { name: description })).toBeVisible();
 }
 
