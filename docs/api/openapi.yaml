@@ -902,7 +902,7 @@ components:
           minLength: 1
     TokenResponse:
       type: object
-      required: [tokenType, accessToken, refreshToken, expiresIn, user]
+      required: [tokenType, accessToken, expiresIn, user]
       properties:
         tokenType:
           type: string
@@ -910,11 +910,9 @@ components:
         accessToken:
           type: string
           description: "Send as `Authorization: Bearer <accessToken>`."
-        refreshToken:
-          type: string
         expiresIn:
           type: integer
-          description: Seconds until the access token expires.
+          description: Seconds until the access token expires. Sign in again after that.
         user:
           type: object
           required: [id, email]

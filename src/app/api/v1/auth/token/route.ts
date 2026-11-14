@@ -1,35 +1,22 @@
 import { createClient } from "@supabase/supabase-js";
 
 import { apiError } from "@/lib/api/errors";
+import { readJsonBody } from "@/lib/api/json-body";
 import type { Database } from "@/lib/db/database.types";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/db/server";
-import { apiTokenRequestSchema } from "@/lib/validation/api-auth";
+import { signInSchema } from "@/lib/validation/auth";
 
 /**
  * Signs in with an email and password and returns a token for
  * `Authorization: Bearer <token>`, for scripts and other tools. This is the only
  * endpoint that does not need a token. A wrong password and an unknown email
  * give the same 401, so the answer does not reveal which emails have accounts.
+ * There is no refresh token: when `expiresIn` runs out, sign in again.
  */
 export async function POST(request: Request): Promise<Response> {
-  if (
-    request.headers.get("content-type")?.split(";")[0].trim() !==
-    "application/json"
-  ) {
-    return apiError(
-      "UNSUPPORTED_MEDIA_TYPE",
-      "Content-Type must be application/json",
-      415,
-    );
-  }
-
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError("VALIDATION_ERROR", "Request body must be valid JSON", 422);
-  }
-  const parsed = apiTokenRequestSchema.safeParse(body);
+  const json = await readJsonBody(request);
+  if (!json.ok) return json.response;
+  const parsed = signInSchema.safeParse(json.body);
   if (!parsed.success) {
     return apiError(
       "VALIDATION_ERROR",
@@ -68,7 +55,6 @@ export async function POST(request: Request): Promise<Response> {
   return Response.json({
     tokenType: "bearer",
     accessToken: data.session.access_token,
-    refreshToken: data.session.refresh_token,
     expiresIn: data.session.expires_in,
     user: { id: data.user.id, email: data.user.email ?? null },
   });
