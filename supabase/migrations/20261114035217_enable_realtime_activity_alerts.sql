@@ -1,0 +1,13 @@
+-- US4 (#11): live updates for group members.
+--
+-- Every expense insert, edit and delete and every payment already writes exactly
+-- one row to public.activity (record_expense_activity, record_expense_deletion,
+-- record_payment_activity), with the group_id. Clients subscribe to INSERTs on
+-- activity for their group and refetch, so expenses, expense_shares and payments
+-- don't need to be published. Alerts are published so a deletion alert shows up
+-- for the person who logged the expense.
+--
+-- Realtime checks each event against the subscriber's RLS select policies
+-- (activity_member_select, alerts_owner_select), so people outside the group,
+-- or other users' alerts, never reach a client.
+alter publication supabase_realtime add table public.activity, public.alerts;

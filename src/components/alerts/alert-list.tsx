@@ -13,6 +13,14 @@ export function AlertList({ alerts: initialAlerts }: AlertListProps) {
   const [alerts, setAlerts] = useState(initialAlerts);
   const [error, setError] = useState<string | null>(null);
 
+  // When the page data refreshes (for example a live update, US4), show the
+  // server's list. Adjusting state during render avoids a second paint.
+  const [shownAlerts, setShownAlerts] = useState(initialAlerts);
+  if (initialAlerts !== shownAlerts) {
+    setShownAlerts(initialAlerts);
+    setAlerts(initialAlerts);
+  }
+
   async function markRead(alertId: string) {
     setError(null);
     const response = await fetch(`/api/v1/alerts/${alertId}`, {
