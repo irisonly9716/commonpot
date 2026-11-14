@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { ActivityFeed } from "@/components/activity/activity-feed";
 import { AlertList } from "@/components/alerts/alert-list";
+import { ConnectionStatus } from "@/components/realtime/connection-status";
 import type { ActivityItem } from "@/lib/data/activity";
 import type { AlertItem } from "@/lib/data/alerts";
 import type {
@@ -13,6 +14,7 @@ import type {
   ExpenseMember,
 } from "@/lib/data/expenses";
 import type { GroupRole } from "@/lib/domain/expenses";
+import { useGroupRealtime } from "@/lib/realtime/use-group-realtime";
 import { ExpenseForm } from "./expense-form";
 import { ExpenseList } from "./expense-list";
 
@@ -43,19 +45,31 @@ export function ExpensesPage({
   const [expenses, setExpenses] = useState(initialExpenses);
 
   async function refreshExpenses() {
-    const response = await fetch(`/api/v1/groups/${groupId}/expenses`);
+    const response = await fetch(`/api/v1/groups/${groupId}/expenses`).catch(
+      () => null,
+    );
+    // The network is down: keep the page as it is. A server refresh would fail
+    // too and reload the whole page; the next change or reconnect catches up.
+    if (!response) return;
     if (response.ok) {
       setExpenses((await response.json()) as ExpenseListItem[]);
     }
-    // Re-renders the server data, including the activity feed.
+    // Re-renders the server data, including the activity feed and alerts.
     router.refresh();
   }
+
+  // Other members' changes arrive live and refresh the page the same way (US4).
+  const { status } = useGroupRealtime(groupId, {
+    userId: currentUserId,
+    onChange: refreshExpenses,
+  });
 
   return (
     <main>
       <nav aria-label="Group pages">
         <a href={`/groups/${groupId}/balances`}>Balances and settle up</a>
       </nav>
+      <ConnectionStatus status={status} />
       <AlertList alerts={alerts} />
       <ExpenseForm
         categories={categories}

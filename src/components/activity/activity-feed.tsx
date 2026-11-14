@@ -34,25 +34,28 @@ export function ActivityFeed({
   return (
     <section aria-labelledby="activity-heading">
       <h2 id="activity-heading">Activity</h2>
-      {items.length === 0 ? (
-        <p>No activity yet.</p>
-      ) : (
-        <ol>
-          {items.map((item) => (
-            <li key={item.id}>
-              <span>
-                {describe(item, currentUserId)}
-                {item.amountCents !== null &&
-                  ` · ${formatMoney(item.amountCents, currency)}`}
-              </span>{" "}
-              {/* Server and browser time zones can differ, so the text may change on hydration. */}
-              <time dateTime={item.createdAt} suppressHydrationWarning>
-                {timeFormat.format(new Date(item.createdAt))}
-              </time>
-            </li>
-          ))}
-        </ol>
-      )}
+      {/* Live updates (US4) are announced to screen readers. */}
+      <div aria-live="polite">
+        {items.length === 0 ? (
+          <p>No activity yet.</p>
+        ) : (
+          <ol>
+            {items.map((item) => (
+              <li key={item.id}>
+                <span>
+                  {describe(item, currentUserId)}
+                  {item.amountCents !== null &&
+                    ` · ${formatMoney(item.amountCents, currency)}`}
+                </span>{" "}
+                {/* Server and browser time zones can differ, so the text may change on hydration. */}
+                <time dateTime={item.createdAt} suppressHydrationWarning>
+                  {timeFormat.format(new Date(item.createdAt))}
+                </time>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </section>
   );
 }

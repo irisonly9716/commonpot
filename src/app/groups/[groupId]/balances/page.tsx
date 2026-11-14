@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { BalancesView } from "@/components/balances/balances-view";
+import { GroupLiveRefresh } from "@/components/realtime/group-live-refresh";
 import {
   buildBalanceBreakdown,
   buildGroupBalances,
@@ -38,14 +39,18 @@ export default async function GroupBalancesPage({ params }: PageProps) {
   );
 
   return (
-    <BalancesView
-      balances={balances}
-      breakdowns={breakdowns}
-      currency={currency}
-      currentUserId={user.id}
-      groupId={groupId}
-      members={ledger.members}
-      settlements={settlements}
-    />
+    <>
+      {/* Another member's expense or payment re-renders these numbers (US4). */}
+      <GroupLiveRefresh groupId={groupId} userId={user.id} />
+      <BalancesView
+        balances={balances}
+        breakdowns={breakdowns}
+        currency={currency}
+        currentUserId={user.id}
+        groupId={groupId}
+        members={ledger.members}
+        settlements={settlements}
+      />
+    </>
   );
 }
