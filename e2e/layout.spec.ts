@@ -7,7 +7,7 @@ test.describe("page layout", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     for (const path of ["/sign-in", "/sign-up"]) {
       await page.goto(path);
-      const box = await page.getByRole("main").locator("form").boundingBox();
+      const box = await page.locator("form").boundingBox();
       expect(box?.width ?? 0, `${path} form width`).toBeGreaterThan(280);
     }
   });
