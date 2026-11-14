@@ -218,6 +218,30 @@ describe("US12 site admin API: suspend and reactivate", () => {
     expect((await getMe(call("GET", newToken))).status).toBe(200);
   });
 
+  it("treats suspended_at as signed out even without the Auth ban", async () => {
+    // The ban and suspended_at are set together, but the API must not depend on
+    // the ban alone: an access token stays valid until it expires.
+    const user = await signUpFreshUser();
+    expect((await getMe(call("GET", user.token))).status).toBe(200);
+
+    const service = createClient<Database>(
+      supabaseUrl,
+      process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+    await service
+      .from("profiles")
+      .update({ suspended_at: new Date().toISOString() })
+      .eq("id", user.id);
+    expect((await getMe(call("GET", user.token))).status).toBe(401);
+
+    await service
+      .from("profiles")
+      .update({ suspended_at: null })
+      .eq("id", user.id);
+    expect((await getMe(call("GET", user.token))).status).toBe(200);
+  });
+
   it("does not let a site admin suspend themselves", async () => {
     const admin = await signIn("site-admin@example.com");
     const users = (await (
