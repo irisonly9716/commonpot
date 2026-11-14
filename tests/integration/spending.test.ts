@@ -27,6 +27,11 @@ async function signIn(email: string): Promise<string> {
   return body.access_token;
 }
 
+async function userIdOf(token: string): Promise<string> {
+  const { data } = await clientFor(token).auth.getUser(token);
+  return data.user!.id;
+}
+
 function clientFor(token: string) {
   return createClient<Database>(supabaseUrl, anonKey, {
     global: { headers: { Authorization: `Bearer ${token}` } },
@@ -66,7 +71,7 @@ describe("US8 spending for the insights page", () => {
     const supabase = clientFor(token);
     const month = "2026-11";
 
-    const spending = await loadGroupSpending(supabase, groupId, month);
+    const spending = await loadGroupSpending(supabase, groupId, month, adminId);
     expect(spending).not.toBeNull();
 
     const { data: listed } = await supabase
@@ -105,12 +110,14 @@ describe("US8 spending for the insights page", () => {
       clientFor(adminToken),
       groupId,
       "2025-03",
+      adminId,
     );
     const memberToken = await signIn("member@example.com");
     const forMember = await loadGroupSpending(
       clientFor(memberToken),
       groupId,
       "2025-03",
+      memberId,
     );
 
     const month = "2025-03";
@@ -129,7 +136,12 @@ describe("US8 spending for the insights page", () => {
   it("returns nothing for someone outside the group", async () => {
     const token = await signIn("site-admin@example.com");
     expect(
-      await loadGroupSpending(clientFor(token), groupId, "2026-11"),
+      await loadGroupSpending(
+        clientFor(token),
+        groupId,
+        "2026-11",
+        await userIdOf(token),
+      ),
     ).toBeNull();
   });
 });
