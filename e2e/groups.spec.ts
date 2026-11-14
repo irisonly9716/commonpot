@@ -39,6 +39,13 @@ test.describe("US2 start a shared account", () => {
     ).toHaveCount(1);
     const inviteUrl = await createInviteLink(creator);
 
+    // The group page links to the other group pages.
+    const pages = creator.getByRole("navigation", { name: "Group pages" });
+    await expect(pages.getByRole("link", { name: "Expenses" })).toBeVisible();
+    await pages.getByRole("link", { name: "Balances" }).click();
+    await expect(creator).toHaveURL(/\/groups\/[0-9a-f-]{36}\/balances$/);
+    await creator.goBack();
+
     // A guest opens the link while signed out, signs in, and lands in the group.
     const guest = await (await browser.newContext()).newPage();
     await guest.goto(inviteUrl);
