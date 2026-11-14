@@ -14,13 +14,27 @@ describe("US3 expense domain", () => {
     expect(() => parseAmountToCents("1.234")).toThrow();
   });
 
-  it("gives equal-split leftover cents to members in order", () => {
+  it("gives equal-split leftover cents to members sorted by user id", () => {
     expect(splitEqually(8421, ["you", "alex", "sam", "mia"])).toEqual([
-      { userId: "you", amountCents: 2106 },
-      { userId: "alex", amountCents: 2105 },
+      { userId: "you", amountCents: 2105 },
+      { userId: "alex", amountCents: 2106 },
       { userId: "sam", amountCents: 2105 },
       { userId: "mia", amountCents: 2105 },
     ]);
+    expect(splitEqually(1002, ["c", "a", "b", "d"])).toEqual([
+      { userId: "c", amountCents: 250 },
+      { userId: "a", amountCents: 251 },
+      { userId: "b", amountCents: 251 },
+      { userId: "d", amountCents: 250 },
+    ]);
+  });
+
+  it("splits the same way whatever order the members are listed in", () => {
+    const byUser = (shares: Array<{ userId: string; amountCents: number }>) =>
+      Object.fromEntries(shares.map((s) => [s.userId, s.amountCents]));
+    expect(byUser(splitEqually(1001, ["b", "c", "a"]))).toEqual(
+      byUser(splitEqually(1001, ["a", "b", "c"])),
+    );
   });
 
   it("reports the difference for an exact split", () => {

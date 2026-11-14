@@ -144,4 +144,22 @@ describe("US3 expense API", () => {
 
     expect([403, 404]).toContain(response.status);
   });
+
+  it("returns 401 before checking the group id", async () => {
+    const badContext = { params: Promise.resolve({ groupId: "not-a-uuid" }) };
+    const url = "http://localhost/api/v1/groups/not-a-uuid/expenses";
+
+    const get = await GET(new Request(url), badContext);
+    expect(get.status).toBe(401);
+
+    const post = await POST(
+      new Request(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{}",
+      }),
+      badContext,
+    );
+    expect(post.status).toBe(401);
+  });
 });
