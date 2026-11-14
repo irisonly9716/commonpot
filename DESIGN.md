@@ -71,12 +71,12 @@ rounded:
   md: 6px
   full: 9999px
 spacing:
-  xs: 4px
-  sm: 8px
-  md: 12px
-  lg: 16px
-  xl: 20px
-  2xl: 24px
+  space-1: 4px
+  space-2: 8px
+  space-3: 12px
+  space-4: 16px
+  space-5: 20px
+  space-6: 24px
 components:
   screen:
     backgroundColor: "{colors.paper}"
@@ -228,7 +228,7 @@ Money is formatted for display only, with `Intl.NumberFormat`, and always shows 
 
 Mobile first. Design at 390px wide, one column, then add a second column from 1024px.
 
-- **Gutter:** 20px on each side of every screen (`spacing.xl`).
+- **Gutter:** 20px on each side of every screen (`spacing.space-5`).
 - **Spacing scale:** 4, 8, 12, 16, 20, 24px. Rows use 8 to 14px of vertical padding, sections use 16px, and there is 10px of paper between sections.
 - **Tap targets:** at least 44px high for every button, link-button, field, segment and nav item. Nav is 64px tall.
 - **Order on the home screen:** balance, then budgets, then live activity. The floating "Add expense" button sits above the bottom navigation, bottom right.
