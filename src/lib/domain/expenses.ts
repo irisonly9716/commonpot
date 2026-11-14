@@ -37,10 +37,16 @@ export function splitEqually(
 
   const baseCents = Math.floor(amountCents / memberIds.length);
   const leftoverCents = amountCents % memberIds.length;
+  // Leftover cents go one at a time to members sorted by user id, so the
+  // result doesn't depend on the order the members were listed in.
+  const leftoverRank = new Map(
+    [...memberIds].sort().map((userId, rank) => [userId, rank]),
+  );
 
-  return memberIds.map((userId, index) => ({
+  return memberIds.map((userId) => ({
     userId,
-    amountCents: baseCents + (index < leftoverCents ? 1 : 0),
+    amountCents:
+      baseCents + ((leftoverRank.get(userId) ?? 0) < leftoverCents ? 1 : 0),
   }));
 }
 
@@ -55,4 +61,60 @@ export function checkExactSplit(
     differenceCents,
     isValid: differenceCents === 0,
   };
+}
+
+export type GroupRole = "admin" | "member";
+
+/** Who is acting; without a role they get no admin rights. */
+export type ExpenseActor = {
+  userId: string;
+  role?: GroupRole;
+};
+
+type LoggedExpense = {
+  createdBy: string;
+};
+
+/** Only the person who logged an expense can edit it, whatever their role (US6). */
+export function canEditExpense(
+  actor: ExpenseActor,
+  expense: LoggedExpense,
+): boolean {
+  return actor.userId === expense.createdBy;
+}
+
+/** The person who logged an expense or any group admin can delete it (US6). */
+export function canDeleteExpense(
+  actor: ExpenseActor,
+  expense: LoggedExpense,
+): boolean {
+  return actor.userId === expense.createdBy || actor.role === "admin";
+}
+
+/** Deleting someone else's expense sends them an in-app alert. */
+export function deletionAlertsCreator(
+  actor: ExpenseActor,
+  expense: LoggedExpense,
+): boolean {
+  return actor.userId !== expense.createdBy;
+}
+
+/**
+ * Which split mode to reopen an expense in: "equal" when its shares are exactly
+ * what splitEqually gives for the same members, "exact" otherwise.
+ */
+export function detectSplitMode(
+  amountCents: number,
+  shares: readonly ExpenseShare[],
+): "equal" | "exact" {
+  if (shares.length === 0) return "exact";
+  const equal = splitEqually(
+    amountCents,
+    shares.map((share) => share.userId),
+  );
+  return equal.every(
+    (share, index) => share.amountCents === shares[index].amountCents,
+  )
+    ? "equal"
+    : "exact";
 }

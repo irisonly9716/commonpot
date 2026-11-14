@@ -89,4 +89,40 @@ test.describe("US1 sign in safely", () => {
     const signedIn = await page.request.get("/api/v1/me");
     expect(signedIn.status()).toBe(200);
   });
+
+  test("keeps next when someone moves from sign-in to sign-up", async ({
+    page,
+  }) => {
+    await page.goto("/sign-in?next=%2Fgroups%3Ftab%3Dbalances");
+    await page.getByRole("link", { name: "Create an account" }).click();
+    await expect(page).toHaveURL(/\/sign-up\?next=%2Fgroups%3Ftab%3Dbalances$/);
+
+    await page.getByLabel("Display name").fill("Link Tester");
+    await page.getByLabel("Email").fill(`link-${Date.now()}@example.com`);
+    await page.getByLabel("Password").fill("a-long-password");
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(page).toHaveURL(/\/groups\?tab=balances$/);
+  });
+
+  test("sends a signed-in visitor to the page in next, with its query", async ({
+    page,
+  }) => {
+    await page.goto("/sign-in");
+    await page.getByLabel("Email").fill(memberEmail);
+    await page.getByLabel("Password").fill(memberPassword);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page).toHaveURL(/\/groups$/);
+
+    await page.goto("/sign-in?next=%2Fgroups%3Ftab%3Dbalances");
+    await expect(page).toHaveURL(/\/groups\?tab=balances$/);
+  });
+
+  test("does not crash when next appears twice", async ({ page }) => {
+    await page.goto("/sign-in?next=%2Fa&next=%2Fb");
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+    await page.goto("/sign-up?next=%2Fa&next=%2Fb");
+    await expect(
+      page.getByRole("heading", { name: "Create your account" }),
+    ).toBeVisible();
+  });
 });

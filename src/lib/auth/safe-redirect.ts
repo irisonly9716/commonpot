@@ -6,10 +6,11 @@ const AUTH_PAGES = new Set(["/sign-in", "/sign-up"]);
  * pages themselves, gives the fallback.
  */
 export function safeRedirectPath(
-  next: string | null | undefined,
+  next: string | readonly string[] | null | undefined,
   fallback = "/groups",
 ): string {
-  if (!next || !next.startsWith("/")) return fallback;
+  // A repeated ?next=/a&next=/b reaches us as an array. Treat it as missing.
+  if (typeof next !== "string" || !next.startsWith("/")) return fallback;
   // "//host" is protocol-relative and "/\host" is read as "//host" by browsers.
   if (next.startsWith("//") || next.startsWith("/\\")) return fallback;
   if (/[\u0000-\u001f\\]/.test(next)) return fallback;

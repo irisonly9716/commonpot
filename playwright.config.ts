@@ -9,7 +9,7 @@ export default defineConfig({
   use: { baseURL: `http://localhost:${port}` },
   webServer: {
     command: `npm run dev -- --port ${port}`,
-    url: `http://localhost:${port}/sign-in`,
+    url: `http://localhost:${port}/`,
     reuseExistingServer: false,
     timeout: 120_000,
   },
