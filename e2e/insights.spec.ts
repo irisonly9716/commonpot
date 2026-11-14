@@ -44,7 +44,9 @@ test.describe("US8 see where the money goes", () => {
     expect(toCents(myTotal)).toBeLessThanOrEqual(toCents(headerTotal));
 
     // Another month goes through the URL and keeps working.
-    await page.getByLabel("Month").selectOption({ index: 1 });
+    await page
+      .getByRole("combobox", { name: "Month" })
+      .selectOption({ index: 1 });
     await expect(page).toHaveURL(/insights\?month=\d{4}-\d{2}$/);
     await expect(page.getByRole("heading", { name: "Insights" })).toBeVisible();
   });
