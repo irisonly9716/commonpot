@@ -332,9 +332,11 @@ describe("US12 site admin API: default categories", () => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     const groupId = crypto.randomUUID();
-    const { error } = await supabase
-      .from("groups")
-      .insert({ id: groupId, name: "Default list check" });
+    const { error } = await supabase.from("groups").insert({
+      id: groupId,
+      name: "Default list check",
+      created_by: "22222222-2222-4222-8222-222222222222",
+    });
     expect(error).toBeNull();
     const { data } = await supabase
       .from("categories")
