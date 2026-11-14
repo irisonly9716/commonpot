@@ -4,6 +4,7 @@ import type { Database } from "@/lib/db/database.types";
 import { shiftMonth, type SpendingExpense } from "@/lib/domain/spending";
 
 export type GroupSpending = {
+  groupName: string;
   currency: string;
   expenses: SpendingExpense[];
 };
@@ -25,7 +26,11 @@ export async function loadGroupSpending(
   const before = `${shiftMonth(endMonth, 1)}-01`;
 
   const [group, membership, expenses] = await Promise.all([
-    supabase.from("groups").select("currency").eq("id", groupId).maybeSingle(),
+    supabase
+      .from("groups")
+      .select("name, currency")
+      .eq("id", groupId)
+      .maybeSingle(),
     supabase
       .from("group_members")
       .select("user_id")
@@ -48,6 +53,7 @@ export async function loadGroupSpending(
   if (!group.data || !membership.data) return null;
 
   return {
+    groupName: group.data.name,
     currency: group.data.currency,
     expenses: (expenses.data ?? []).map((expense) => ({
       id: expense.id,
