@@ -18,6 +18,11 @@ export default async function GroupsPage() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-6 p-6">
       <h1 className="text-2xl font-semibold">Your groups</h1>
+      <nav aria-label="Your pages">
+        <Link href="/me/spending" className="underline">
+          My spending
+        </Link>
+      </nav>
 
       {groups.length === 0 ? (
         <p>
