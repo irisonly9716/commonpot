@@ -69,15 +69,18 @@ describe("US8 insights view", () => {
       "aria-pressed",
       "true",
     );
-    expect(screen.getByText("Groceries")).toBeVisible();
-    expect(screen.getByText("$90.00 · 82%")).toBeVisible();
+    const list = within(screen.getByRole("list"));
+    expect(list.getByText("Groceries")).toBeVisible();
+    expect(list.getByText("$90.00 · 82%")).toBeVisible();
   });
 
   it("switches to Me and shows my shares, not what I paid", async () => {
     renderView();
     await userEvent.click(screen.getByRole("button", { name: "Me" }));
     expect(screen.getByText("Total $40.00")).toBeVisible();
-    expect(screen.getByText("$30.00 · 75%")).toBeVisible();
+    expect(
+      within(screen.getByRole("list")).getByText("$30.00 · 75%"),
+    ).toBeVisible();
   });
 
   it("shows a table with the same numbers for every chart", async () => {
