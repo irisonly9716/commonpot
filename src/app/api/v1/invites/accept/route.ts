@@ -1,5 +1,6 @@
 import { getAuthenticatedSupabase } from "@/lib/api/auth";
 import { apiError } from "@/lib/api/errors";
+import { readJsonBody } from "@/lib/api/json-body";
 import { INVITE_UNAVAILABLE_MESSAGE } from "@/lib/groups/messages";
 import { acceptInviteSchema } from "@/lib/validation/groups";
 
@@ -15,22 +16,9 @@ export async function POST(request: Request): Promise<Response> {
     return apiError("UNAUTHORIZED", "Authentication required", 401);
   }
 
-  if (
-    request.headers.get("content-type")?.split(";")[0].trim() !==
-    "application/json"
-  ) {
-    return apiError(
-      "UNSUPPORTED_MEDIA_TYPE",
-      "Content-Type must be application/json",
-      415,
-    );
-  }
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return apiError("VALIDATION_ERROR", "Request body must be valid JSON", 422);
-  }
+  const json = await readJsonBody(request);
+  if (!json.ok) return json.response;
+  const body = json.body;
   const parsed = acceptInviteSchema.safeParse(body);
   if (!parsed.success) {
     return apiError("VALIDATION_ERROR", "A token is required", 422);

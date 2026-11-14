@@ -1,9 +1,9 @@
 import { apiError } from "@/lib/api/errors";
 import {
   requireAdmin,
-  requireGroupRole,
+  requireGroupMember,
   type GroupRouteContext,
-} from "@/lib/api/group-role";
+} from "@/lib/api/group-access";
 import { listActiveInvites } from "@/lib/data/groups";
 import { buildInviteUrl } from "@/lib/groups/invite-url";
 
@@ -12,7 +12,7 @@ export async function GET(
   request: Request,
   context: GroupRouteContext,
 ): Promise<Response> {
-  const access = await requireGroupRole(request, context);
+  const access = await requireGroupMember(request, context);
   if (!access.ok) return access.response;
   const forbidden = requireAdmin(access);
   if (forbidden) return forbidden;
@@ -36,7 +36,7 @@ export async function POST(
   request: Request,
   context: GroupRouteContext,
 ): Promise<Response> {
-  const access = await requireGroupRole(request, context);
+  const access = await requireGroupMember(request, context);
   if (!access.ok) return access.response;
   const forbidden = requireAdmin(access);
   if (forbidden) return forbidden;

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { apiError } from "@/lib/api/errors";
-import { requireAdmin, requireGroupRole } from "@/lib/api/group-role";
+import { requireAdmin, requireGroupMember } from "@/lib/api/group-access";
 
 type InviteRouteContext = {
   params: Promise<{ groupId: string; inviteId: string }>;
@@ -12,7 +12,7 @@ export async function DELETE(
   request: Request,
   context: InviteRouteContext,
 ): Promise<Response> {
-  const access = await requireGroupRole(request, context);
+  const access = await requireGroupMember(request, context);
   if (!access.ok) return access.response;
   const forbidden = requireAdmin(access);
   if (forbidden) return forbidden;

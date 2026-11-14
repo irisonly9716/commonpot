@@ -1,4 +1,7 @@
-import { requireGroupRole, type GroupRouteContext } from "@/lib/api/group-role";
+import {
+  requireGroupMember,
+  type GroupRouteContext,
+} from "@/lib/api/group-access";
 import { apiError } from "@/lib/api/errors";
 import { getGroupDetail } from "@/lib/data/groups";
 
@@ -7,7 +10,7 @@ export async function GET(
   request: Request,
   context: GroupRouteContext,
 ): Promise<Response> {
-  const access = await requireGroupRole(request, context);
+  const access = await requireGroupMember(request, context);
   if (!access.ok) return access.response;
 
   try {

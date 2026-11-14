@@ -52,11 +52,7 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
         "415":
-          description: Content-Type must be application/json.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
+          $ref: "#/components/responses/UnsupportedMediaType"
         "422":
           $ref: "#/components/responses/ValidationError"
         "500":
@@ -206,11 +202,7 @@ paths:
                   code: INVITE_UNAVAILABLE
                   message: This invite link has expired or was revoked.
         "415":
-          description: Content-Type must be application/json.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
+          $ref: "#/components/responses/UnsupportedMediaType"
         "422":
           $ref: "#/components/responses/ValidationError"
   /api/v1/me:
@@ -855,12 +847,6 @@ components:
             message:
               type: string
   responses:
-    Forbidden:
-      description: Only group admins can do this
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ApiError"
     Unauthorized:
       description: Authentication required
       content:
