@@ -1,0 +1,25 @@
+# Keeps the free production Supabase project from pausing after a week without
+# activity (issue #49). It sends one small request every 3 days. It needs the
+# repository secrets SUPABASE_URL and SUPABASE_ANON_KEY, set by the repo owner;
+# until they exist it only prints a warning. It never touches data.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Ping production Supabase
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Send the request
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: bash .github/scripts/keep-alive.sh
