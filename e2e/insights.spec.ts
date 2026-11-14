@@ -103,6 +103,18 @@ test.describe("US8 see where the money goes", () => {
     await expect(page.getByText("No spending in March 2025.")).toBeVisible();
   });
 
+  test("opens on the visitor's own current month when none is given", async ({
+    page,
+  }) => {
+    await signInTo(page, "member@example.com", `/groups/${groupId}/insights`);
+    const now = new Date();
+    const local = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    await expect(page.getByRole("heading", { name: "Insights" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Month" })).toHaveValue(
+      local,
+    );
+  });
+
   test("returns 404 for someone who is not in the group", async ({ page }) => {
     await page.goto("/sign-in");
     await page.getByLabel("Email").fill("site-admin@example.com");

@@ -1,6 +1,6 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { InsightsView } from "@/components/insights/insights-view";
 import type { SpendingExpense } from "@/lib/domain/spending";
@@ -11,6 +11,13 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push, replace }),
   usePathname: () => "/groups/g1/insights",
 }));
+
+beforeEach(() => {
+  // Only Date is faked, so userEvent's timers keep working. The browser's month
+  // is October 2026 unless a test sets another one.
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date(2026, 9, 15, 9, 0));
+});
 
 afterEach(() => {
   cleanup();
@@ -150,7 +157,6 @@ describe("US8 insights view", () => {
 
   describe("this month for the visitor, not the server", () => {
     it("moves to the browser's month when none was chosen", () => {
-      vi.useFakeTimers();
       // Local time on 1 December, while the server is still in November.
       vi.setSystemTime(new Date(2026, 11, 1, 9, 0));
       renderView("2026-11", { monthFromUrl: false, latestMonth: "2026-11" });
@@ -158,7 +164,6 @@ describe("US8 insights view", () => {
     });
 
     it("lists the browser's month in the picker", () => {
-      vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 11, 1, 9, 0));
       renderView("2026-11", { monthFromUrl: false, latestMonth: "2026-11" });
       const options = within(screen.getByLabelText("Month")).getAllByRole(
@@ -168,14 +173,12 @@ describe("US8 insights view", () => {
     });
 
     it("does not move when the month came from the address", () => {
-      vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 11, 1, 9, 0));
       renderView("2026-11", { monthFromUrl: true, latestMonth: "2026-11" });
       expect(replace).not.toHaveBeenCalled();
     });
 
     it("does not move when the browser agrees with the server", () => {
-      vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 10, 14, 9, 0));
       renderView("2026-11", { monthFromUrl: false, latestMonth: "2026-11" });
       expect(replace).not.toHaveBeenCalled();

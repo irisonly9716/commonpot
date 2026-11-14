@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import {
   monthTotal,
@@ -22,13 +22,28 @@ type InsightsViewProps = {
   currentUserId: string;
   /** The month shown, `2026-10`. */
   month: string;
-  /** The newest month the picker offers, normally this month. */
+  /** The newest month the server offers: its own current month. */
   latestMonth: string;
+  /**
+   * True when `month` came from the address. When it did not, the server
+   * guessed this month from its own (UTC) date, and the browser's local month
+   * replaces it if the two differ.
+   */
+  monthFromUrl: boolean;
   /** Expenses for `month` and the five months before it. */
   expenses: SpendingExpense[];
 };
 
 const PICKER_MONTHS = 12;
+
+function subscribeToNothing(): () => void {
+  return () => {};
+}
+
+function currentLocalMonth(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
 
 function Toggle<T extends string>({
   label,
@@ -66,12 +81,27 @@ export function InsightsView({
   currentUserId,
   month,
   latestMonth,
+  monthFromUrl,
   expenses,
 }: InsightsViewProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [who, setWho] = useState<"Me" | "Group">("Group");
   const [display, setDisplay] = useState<"Chart" | "Table">("Chart");
+  // "This month" means the visitor's month. New expenses default to the
+  // browser's date, so the server's UTC month can be a day off near month end.
+  // It is null while rendering on the server and before hydration.
+  const localMonth = useSyncExternalStore(
+    subscribeToNothing,
+    currentLocalMonth,
+    () => null,
+  );
+
+  useEffect(() => {
+    if (!monthFromUrl && localMonth && localMonth !== month) {
+      router.replace(`${pathname}?month=${localMonth}`);
+    }
+  }, [monthFromUrl, localMonth, month, pathname, router]);
 
   const scope: SpendingScope =
     who === "Me" ? { kind: "me", userId: currentUserId } : { kind: "group" };
@@ -79,9 +109,12 @@ export function InsightsView({
   const categories = spendingByCategory(expenses, scope, month);
   const trend = monthlyTrend(expenses, scope, month);
   const monthName = formatMonth(month);
+  const newest = [latestMonth, month, localMonth ?? latestMonth].sort().at(-1)!;
   const pickerMonths = Array.from({ length: PICKER_MONTHS }, (_, i) =>
-    shiftMonth(latestMonth, -i),
+    shiftMonth(newest, -i),
   );
+  // The page accepts any past month, so the picker must be able to show it.
+  if (!pickerMonths.includes(month)) pickerMonths.push(month);
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-6 p-6">
