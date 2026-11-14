@@ -31,7 +31,9 @@ function call() {
 }
 
 describe("suspend route when the server is not set up (#17)", () => {
-  beforeEach(() => createAdminClient.mockReset());
+  beforeEach(() => {
+    createAdminClient.mockReset();
+  });
 
   it("answers a JSON 500, not an HTML error page, without the service-role key", async () => {
     createAdminClient.mockImplementation(() => {

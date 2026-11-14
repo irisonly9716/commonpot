@@ -43,7 +43,17 @@ export async function PATCH(
     return apiError("CONFLICT", "You cannot suspend your own account", 409);
   }
 
-  const admin = createAdminClient();
+  let admin: ReturnType<typeof createAdminClient>;
+  try {
+    admin = createAdminClient();
+  } catch {
+    // Most likely SUPABASE_SERVICE_ROLE_KEY is not set on this deployment.
+    return apiError(
+      "SERVER_MISCONFIGURED",
+      "Suspending users is not available on this server",
+      500,
+    );
+  }
   const { data: existing, error: findError } = await admin
     .from("profiles")
     .select("suspended_at")

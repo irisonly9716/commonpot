@@ -80,14 +80,22 @@ export function DefaultCategoryEditor({
               key={category.id}
               className="border-line flex flex-wrap items-center gap-2 border-b pb-2"
             >
-              <input
-                aria-label={`Name of ${category.name}`}
-                value={name}
-                onChange={(event) =>
-                  setNames({ ...names, [category.id]: event.target.value })
-                }
-                className="border-line bg-surface min-h-11 flex-1 border px-3"
-              />
+              <div className="flex min-w-48 flex-1 flex-col">
+                <label
+                  htmlFor={`category-name-${category.id}`}
+                  className="text-muted text-sm"
+                >
+                  Name of {category.name}
+                </label>
+                <input
+                  id={`category-name-${category.id}`}
+                  value={name}
+                  onChange={(event) =>
+                    setNames({ ...names, [category.id]: event.target.value })
+                  }
+                  className="border-line bg-surface min-h-11 border px-3"
+                />
+              </div>
               {category.isArchived ? (
                 <span className="text-muted text-sm">Archived</span>
               ) : null}

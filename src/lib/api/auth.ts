@@ -45,13 +45,14 @@ export async function getAuthenticatedSupabase(
   if (error || !user) return null;
 
   // A suspended account is treated as signed out, even if its access token is
-  // still valid (the Auth ban only stops new sign-ins and refreshes).
-  const { data: profile } = await supabase
+  // still valid (the Auth ban only stops new sign-ins and refreshes). This fails
+  // closed: if the profile cannot be read, or is missing, the user is not let in.
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("suspended_at")
     .eq("id", user.id)
     .maybeSingle();
-  if (profile?.suspended_at) return null;
+  if (profileError || !profile || profile.suspended_at) return null;
 
   return { supabase, user };
 }
