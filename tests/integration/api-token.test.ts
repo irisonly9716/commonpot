@@ -27,7 +27,7 @@ function expensesRequest(accessToken?: string) {
 const groupContext = { params: Promise.resolve({ groupId: seedGroupId }) };
 
 describe("US13 connect other tools: signing in through the API", () => {
-  it("returns a bearer token, a refresh token and the user", async () => {
+  it("returns a bearer token and the user, and no refresh token", async () => {
     const response = await issueToken(
       tokenRequest({ email: "member@example.com", password: "password123" }),
     );
@@ -35,7 +35,6 @@ describe("US13 connect other tools: signing in through the API", () => {
     expect(await response.json()).toEqual({
       tokenType: "bearer",
       accessToken: expect.any(String),
-      refreshToken: expect.any(String),
       expiresIn: expect.any(Number),
       user: { id: expect.any(String), email: "member@example.com" },
     });
