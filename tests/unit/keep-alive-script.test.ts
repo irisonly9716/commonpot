@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { spawn } from "node:child_process";
+import { execFile } from "node:child_process";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { join } from "node:path";
@@ -30,14 +30,24 @@ async function startServer(status: number, seen: Seen = {}) {
 }
 
 function run(env: Record<string, string>) {
-  return new Promise<{ code: number | null; output: string }>((resolve) => {
-    const child = spawn("bash", [script], {
-      env: { PATH: process.env.PATH ?? "", ...env },
-    });
-    let output = "";
-    child.stdout.on("data", (chunk) => (output += chunk));
-    child.stderr.on("data", (chunk) => (output += chunk));
-    child.on("close", (code) => resolve({ code, output }));
+  return new Promise<{ code: number; output: string }>((resolve) => {
+    const environment: NodeJS.ProcessEnv = {
+      NODE_ENV: "test",
+      PATH: process.env.PATH ?? "",
+      ...env,
+    };
+    execFile(
+      "bash",
+      [script],
+      { env: environment },
+      (error, stdout, stderr) => {
+        const code = error && typeof error.code === "number" ? error.code : 0;
+        resolve({
+          code: error && code === 0 ? 1 : code,
+          output: stdout + stderr,
+        });
+      },
+    );
   });
 }
 
