@@ -97,40 +97,45 @@ describe("US8 spending for the insights page", () => {
   });
 
   it("counts my share, not what I paid, for each person", async () => {
+    // The database keeps rows between runs, so compare before and after.
+    const month = "2025-03";
     const adminToken = await signIn("admin@example.com");
+    const memberToken = await signIn("member@example.com");
+    const load = async (token: string, userId: string) =>
+      (await loadGroupSpending(clientFor(token), groupId, month, userId))!
+        .expenses;
+    const totals = (
+      expenses: Awaited<ReturnType<typeof load>>,
+      userId: string,
+    ) => ({
+      group: monthTotal(expenses, { kind: "group" }, month),
+      me: monthTotal(expenses, { kind: "me", userId }, month),
+      groceries:
+        spendingByCategory(expenses, { kind: "group" }, month).find(
+          (row) => row.category === "Groceries",
+        )?.amountCents ?? 0,
+    });
+
+    const adminBefore = totals(await load(adminToken, adminId), adminId);
+    const memberBefore = totals(await load(memberToken, memberId), memberId);
+
     const { data: category } = await clientFor(adminToken)
       .from("categories")
-      .select("id, name")
+      .select("id")
       .eq("group_id", groupId)
       .eq("name", "Groceries")
       .single();
     await addMarchExpense(adminToken, category!.id);
 
-    const forAdmin = await loadGroupSpending(
-      clientFor(adminToken),
-      groupId,
-      "2025-03",
-      adminId,
-    );
-    const memberToken = await signIn("member@example.com");
-    const forMember = await loadGroupSpending(
-      clientFor(memberToken),
-      groupId,
-      "2025-03",
-      memberId,
-    );
+    const adminAfter = totals(await load(adminToken, adminId), adminId);
+    const memberAfter = totals(await load(memberToken, memberId), memberId);
 
-    const month = "2025-03";
-    expect(monthTotal(forAdmin!.expenses, { kind: "group" }, month)).toBe(9000);
-    expect(
-      monthTotal(forAdmin!.expenses, { kind: "me", userId: adminId }, month),
-    ).toBe(3000);
-    expect(
-      monthTotal(forMember!.expenses, { kind: "me", userId: memberId }, month),
-    ).toBe(6000);
-    expect(
-      spendingByCategory(forAdmin!.expenses, { kind: "group" }, month),
-    ).toEqual([{ category: "Groceries", amountCents: 9000, percent: 100 }]);
+    // Admin paid 90.00 but their share is 30.00; member's share is 60.00.
+    expect(adminAfter.group - adminBefore.group).toBe(9000);
+    expect(adminAfter.groceries - adminBefore.groceries).toBe(9000);
+    expect(adminAfter.me - adminBefore.me).toBe(3000);
+    expect(memberAfter.me - memberBefore.me).toBe(6000);
+    expect(memberAfter.group - memberBefore.group).toBe(9000);
   });
 
   it("returns nothing for someone outside the group", async () => {
