@@ -67,19 +67,19 @@ The full folder layout, naming rules and patterns for contributors are in [AGENT
 sequenceDiagram
   actor a as Member A
   participant form as ExpenseForm (A's browser)
-  participant route as POST /api/v1/groups/{groupId}/expenses
+  participant route as Expenses API (/api/v1)
   participant db as PostgreSQL
   participant rt as Supabase Realtime
   participant b as Member B's browser
 
   a->>form: amount, description, split, Save
-  form->>form: Zod checks the form; lib/domain works out each share
-  form->>route: JSON with the session cookie
+  form->>form: Zod checks the form, and lib/domain works out each share
+  form->>route: POST the expense as JSON, with the session cookie
   route->>route: signed in? valid group id? JSON? Zod again
   route->>db: rpc create_expense (runs as the user, so RLS applies)
   db->>db: triggers check the shares add up and write an activity row
   db-->>route: the new expense id
-  route-->>form: 201 { id }
+  route-->>form: 201 with the new id
   db-)rt: new activity row
   rt-)b: postgres_changes event (RLS: B is a member)
   b->>b: useGroupRealtime waits 200 ms for more changes
