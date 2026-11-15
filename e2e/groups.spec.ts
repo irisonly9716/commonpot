@@ -45,6 +45,12 @@ test.describe("US2 start a shared account", () => {
     await pages.getByRole("link", { name: "Balances" }).click();
     await expect(creator).toHaveURL(/\/groups\/[0-9a-f-]{36}\/balances$/);
     await creator.goBack();
+    await pages.getByRole("link", { name: "Insights" }).click();
+    await expect(creator).toHaveURL(/\/groups\/[0-9a-f-]{36}\/insights$/);
+    await expect(
+      creator.getByRole("heading", { name: "Insights" }),
+    ).toBeVisible();
+    await creator.goBack();
 
     // A guest opens the link while signed out, signs in, and lands in the group.
     const guest = await (await browser.newContext()).newPage();
