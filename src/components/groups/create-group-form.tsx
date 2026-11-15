@@ -60,11 +60,11 @@ export function CreateGroupForm() {
           autoComplete="off"
           aria-invalid={errors.name ? true : undefined}
           aria-describedby={errors.name ? "name-error" : undefined}
-          className="min-h-11 rounded border border-gray-400 px-3"
+          className="border-muted min-h-11 rounded border px-3"
           {...register("name")}
         />
         {errors.name && (
-          <p id="name-error" className="text-sm text-red-800">
+          <p id="name-error" className="text-owes text-sm">
             {errors.name.message}
           </p>
         )}
@@ -76,7 +76,7 @@ export function CreateGroupForm() {
         </label>
         <select
           id="currency"
-          className="min-h-11 rounded border border-gray-400 px-3"
+          className="border-muted min-h-11 rounded border px-3"
           {...register("currency")}
         >
           {CURRENCIES.map((code) => (
@@ -88,7 +88,7 @@ export function CreateGroupForm() {
       </div>
 
       {formError && (
-        <p role="alert" className="text-sm font-medium text-red-800">
+        <p role="alert" className="text-owes text-sm font-medium">
           {formError}
         </p>
       )}
@@ -96,7 +96,7 @@ export function CreateGroupForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="min-h-11 rounded bg-black px-4 text-white disabled:opacity-60"
+        className="bg-accent text-on-accent min-h-11 rounded px-4 disabled:opacity-60"
       >
         Create group
       </button>

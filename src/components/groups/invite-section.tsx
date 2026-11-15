@@ -54,7 +54,7 @@ export function InviteSection({
       <h2 id="invites-heading" className="text-lg font-semibold">
         Invite links
       </h2>
-      <p className="text-sm text-gray-700">
+      <p className="text-muted text-sm">
         Anyone with a link can join this group after signing in. Links expire
         after 7 days, and you can revoke one at any time.
       </p>
@@ -63,20 +63,20 @@ export function InviteSection({
         <button
           type="button"
           onClick={createInvite}
-          className="min-h-11 rounded bg-black px-4 text-white"
+          className="bg-accent text-on-accent min-h-11 rounded px-4"
         >
           Create invite link
         </button>
       </div>
 
       {error && (
-        <p role="alert" className="text-sm font-medium text-red-800">
+        <p role="alert" className="text-owes text-sm font-medium">
           {error}
         </p>
       )}
 
       {invites.length === 0 ? (
-        <p className="text-sm text-gray-700">There are no active links.</p>
+        <p className="text-muted text-sm">There are no active links.</p>
       ) : (
         <ul className="flex flex-col gap-4">
           {invites.map((invite) => (
@@ -91,23 +91,23 @@ export function InviteSection({
                 id={`invite-${invite.id}`}
                 readOnly
                 value={invite.url}
-                className="min-h-11 rounded border border-gray-400 px-3"
+                className="border-muted min-h-11 rounded border px-3"
               />
-              <p className="text-sm text-gray-700">
+              <p className="text-muted text-sm">
                 Expires {invite.expiresAt.slice(0, 10)}
               </p>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => copyInvite(invite)}
-                  className="min-h-11 rounded border border-gray-400 px-4"
+                  className="border-muted min-h-11 rounded border px-4"
                 >
                   {copiedId === invite.id ? "Copied" : "Copy link"}
                 </button>
                 <button
                   type="button"
                   onClick={() => revokeInvite(invite.id)}
-                  className="min-h-11 rounded border border-gray-400 px-4"
+                  className="border-muted min-h-11 rounded border px-4"
                 >
                   Revoke invite link
                 </button>

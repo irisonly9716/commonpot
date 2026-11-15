@@ -53,7 +53,7 @@ export default async function GroupPage({
           All groups
         </Link>
         <h1 className="text-2xl font-semibold">{group.name}</h1>
-        <p className="text-sm text-gray-700">Currency: {group.currency}</p>
+        <p className="text-muted text-sm">Currency: {group.currency}</p>
       </div>
 
       <GroupNav current="home" groupId={group.id} />

@@ -30,7 +30,7 @@ export default async function GroupsPage() {
               <Link href={`/groups/${group.id}`} className="underline">
                 {group.name}
               </Link>{" "}
-              <span className="text-sm text-gray-700">
+              <span className="text-muted text-sm">
                 {group.currency} · {group.role === "admin" ? "Admin" : "Member"}
               </span>
             </li>

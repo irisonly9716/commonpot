@@ -42,50 +42,46 @@ export function SignInForm({ next }: { next: string }) {
       noValidate
       className="mx-auto flex w-full max-w-sm flex-col gap-4 p-6"
     >
-      <h1 className="text-2xl font-semibold">Sign in</h1>
+      <h1>Sign in</h1>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="email" className="text-sm font-medium">
-          Email
-        </label>
+        <label htmlFor="email">Email</label>
         <input
           id="email"
           type="email"
           autoComplete="email"
           aria-invalid={errors.email ? true : undefined}
           aria-describedby={errors.email ? "email-error" : undefined}
-          className="min-h-11 rounded border border-gray-400 px-3"
+          className="border-muted min-h-11 rounded border px-3"
           {...register("email")}
         />
         {errors.email && (
-          <p id="email-error" className="text-sm text-red-800">
+          <p id="email-error" className="text-label text-owes">
             Enter a valid email address.
           </p>
         )}
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="password" className="text-sm font-medium">
-          Password
-        </label>
+        <label htmlFor="password">Password</label>
         <input
           id="password"
           type="password"
           autoComplete="current-password"
           aria-invalid={errors.password ? true : undefined}
           aria-describedby={errors.password ? "password-error" : undefined}
-          className="min-h-11 rounded border border-gray-400 px-3"
+          className="border-muted min-h-11 rounded border px-3"
           {...register("password")}
         />
         {errors.password && (
-          <p id="password-error" className="text-sm text-red-800">
+          <p id="password-error" className="text-label text-owes">
             {errors.password.message}
           </p>
         )}
       </div>
 
       {formError && (
-        <p role="alert" className="text-sm font-medium text-red-800">
+        <p role="alert" className="text-label text-owes">
           {formError}
         </p>
       )}
@@ -93,12 +89,12 @@ export function SignInForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="min-h-11 rounded bg-black px-4 text-white disabled:opacity-60"
+        className="bg-accent text-on-accent min-h-11 rounded px-4 disabled:opacity-60"
       >
         Sign in
       </button>
 
-      <p className="text-sm">
+      <p className="text-label">
         New here?{" "}
         <Link
           href={`/sign-up?next=${encodeURIComponent(next)}`}
