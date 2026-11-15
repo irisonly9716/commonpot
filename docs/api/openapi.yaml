@@ -689,7 +689,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MemberRemovalError"
+                $ref: "#/components/schemas/ApiError"
               examples:
                 balance:
                   summary: A balance needs confirmation
@@ -1173,24 +1173,6 @@ components:
           type: string
         isArchived:
           type: boolean
-    MemberRemovalError:
-      type: object
-      required: [error]
-      properties:
-        error:
-          type: object
-          required: [code, message]
-          properties:
-            code:
-              type: string
-              enum: [BALANCE_NOT_ZERO, LAST_ADMIN]
-            message:
-              type: string
-            balanceCents:
-              type: integer
-              description: >-
-                Only with `BALANCE_NOT_ZERO`. Positive when the member is owed
-                money, negative when they owe it, in cents.
     ApiError:
       type: object
       required: [error]
@@ -1203,6 +1185,12 @@ components:
               type: string
             message:
               type: string
+            balanceCents:
+              type: integer
+              description: >-
+                Only with `BALANCE_NOT_ZERO` (removing or leaving a group).
+                Positive when the member is owed money, negative when they owe
+                it, in cents.
   responses:
     Unauthorized:
       description: Authentication required
