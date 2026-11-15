@@ -254,6 +254,12 @@
     text-align: left;
   }
 
+  /* Your own balance, the headline of the balances page. */
+  .row-button.display {
+    justify-content: flex-start;
+    font-weight: var(--font-weight-display);
+  }
+
   .nav-link[aria-current="page"] {
     color: var(--color-primary);
     font-weight: var(--font-weight-body-strong);
