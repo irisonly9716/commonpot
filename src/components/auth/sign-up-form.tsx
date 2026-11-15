@@ -78,7 +78,7 @@ export function SignUpForm({ next }: { next: string }) {
           aria-describedby={
             errors.displayName ? "displayName-error" : undefined
           }
-          className="border-muted min-h-11 rounded border px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("displayName")}
         />
         {errors.displayName && (
@@ -96,7 +96,7 @@ export function SignUpForm({ next }: { next: string }) {
           autoComplete="email"
           aria-invalid={errors.email ? true : undefined}
           aria-describedby={errors.email ? "email-error" : undefined}
-          className="border-muted min-h-11 rounded border px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("email")}
         />
         {errors.email && (
@@ -114,7 +114,7 @@ export function SignUpForm({ next }: { next: string }) {
           autoComplete="new-password"
           aria-invalid={errors.password ? true : undefined}
           aria-describedby="password-help"
-          className="border-muted min-h-11 rounded border px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("password")}
         />
         <p
@@ -134,7 +134,7 @@ export function SignUpForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="bg-accent text-on-accent min-h-11 rounded px-4 disabled:opacity-60"
+        className="bg-accent text-on-accent min-h-11 rounded-md px-4 disabled:opacity-60"
       >
         Create account
       </button>

@@ -60,7 +60,7 @@ export function CreateGroupForm() {
           autoComplete="off"
           aria-invalid={errors.name ? true : undefined}
           aria-describedby={errors.name ? "name-error" : undefined}
-          className="border-muted min-h-11 rounded border px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("name")}
         />
         {errors.name && (
@@ -76,7 +76,7 @@ export function CreateGroupForm() {
         </label>
         <select
           id="currency"
-          className="border-muted min-h-11 rounded border px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("currency")}
         >
           {CURRENCIES.map((code) => (
@@ -96,7 +96,7 @@ export function CreateGroupForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="bg-accent text-on-accent min-h-11 rounded px-4 disabled:opacity-60"
+        className="bg-accent text-on-accent min-h-11 rounded-md px-4 disabled:opacity-60"
       >
         Create group
       </button>

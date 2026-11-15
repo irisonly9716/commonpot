@@ -63,7 +63,7 @@ export function InviteSection({
         <button
           type="button"
           onClick={createInvite}
-          className="bg-accent text-on-accent min-h-11 rounded px-4"
+          className="bg-accent text-on-accent min-h-11 rounded-md px-4"
         >
           Create invite link
         </button>
@@ -91,7 +91,7 @@ export function InviteSection({
                 id={`invite-${invite.id}`}
                 readOnly
                 value={invite.url}
-                className="border-muted min-h-11 rounded border px-3"
+                className="border-muted min-h-11 rounded-md border px-3"
               />
               <p className="text-muted text-sm">
                 Expires {invite.expiresAt.slice(0, 10)}
@@ -100,14 +100,14 @@ export function InviteSection({
                 <button
                   type="button"
                   onClick={() => copyInvite(invite)}
-                  className="border-muted min-h-11 rounded border px-4"
+                  className="border-muted min-h-11 rounded-md border px-4"
                 >
                   {copiedId === invite.id ? "Copied" : "Copy link"}
                 </button>
                 <button
                   type="button"
                   onClick={() => revokeInvite(invite.id)}
-                  className="border-muted min-h-11 rounded border px-4"
+                  className="border-muted min-h-11 rounded-md border px-4"
                 >
                   Revoke invite link
                 </button>

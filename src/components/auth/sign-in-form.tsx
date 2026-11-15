@@ -52,7 +52,7 @@ export function SignInForm({ next }: { next: string }) {
           autoComplete="email"
           aria-invalid={errors.email ? true : undefined}
           aria-describedby={errors.email ? "email-error" : undefined}
-          className="border-muted min-h-11 rounded border px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("email")}
         />
         {errors.email && (
@@ -70,7 +70,7 @@ export function SignInForm({ next }: { next: string }) {
           autoComplete="current-password"
           aria-invalid={errors.password ? true : undefined}
           aria-describedby={errors.password ? "password-error" : undefined}
-          className="border-muted min-h-11 rounded border px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("password")}
         />
         {errors.password && (
@@ -89,7 +89,7 @@ export function SignInForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="bg-accent text-on-accent min-h-11 rounded px-4 disabled:opacity-60"
+        className="bg-accent text-on-accent min-h-11 rounded-md px-4 disabled:opacity-60"
       >
         Sign in
       </button>
