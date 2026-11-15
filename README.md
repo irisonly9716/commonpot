@@ -2,7 +2,7 @@
 
 Shared expense accounts for households, roommates and small groups. Members log and split expenses, see who owes whom and get alerts as things change, and each person also keeps a private personal ledger.
 
-**Live app:** _added once Vercel is connected (#3)_ · **API docs:** `/api/docs` on the live app
+**Live app:** https://commonpot.vercel.app · **API docs (Swagger UI):** https://commonpot.vercel.app/api/docs
 
 ## What it does
 
