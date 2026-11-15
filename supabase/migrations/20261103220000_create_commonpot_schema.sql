@@ -46,7 +46,7 @@ create table public.categories (
 create table public.invites (
   id uuid primary key default gen_random_uuid(),
   group_id uuid not null references public.groups (id) on delete cascade,
-  token text not null unique default encode(gen_random_bytes(24), 'hex'),
+  token text not null unique default encode(extensions.gen_random_bytes(24), 'hex'),
   created_by uuid not null references public.profiles (id),
   expires_at timestamptz not null default (now() + interval '7 days'),
   revoked_at timestamptz,
