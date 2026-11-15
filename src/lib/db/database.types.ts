@@ -605,6 +605,7 @@ export type Database = {
       is_group_admin: { Args: { p_group_id: string }; Returns: boolean };
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
       is_site_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      leave_group: { Args: { p_group_id: string }; Returns: undefined };
       platform_counts: {
         Args: Record<PropertyKey, never>;
         Returns: {
