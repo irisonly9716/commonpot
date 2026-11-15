@@ -595,6 +595,244 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "500":
           $ref: "#/components/responses/ServerError"
+  /api/v1/admin/users:
+    get:
+      operationId: listAdminUsers
+      summary: List all users with dates and counts (site admins only)
+      description: Never includes amounts or expense details.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Every account, newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUser"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/v1/admin/users/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    patch:
+      operationId: suspendAdminUser
+      summary: Suspend or reactivate a user (site admins only)
+      description: >-
+        A suspended user cannot sign in, and requests with a token they already
+        hold get 401. A site admin cannot suspend their own account.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [suspended]
+              properties:
+                suspended:
+                  type: boolean
+      responses:
+        "200":
+          description: The user's new status.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, suspendedAt]
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  suspendedAt:
+                    type: [string, "null"]
+                    format: date-time
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/v1/admin/groups:
+    get:
+      operationId: listAdminGroups
+      summary: List all groups with dates and counts (site admins only)
+      description: Never includes amounts or expense details.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Every group, newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminGroup"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/v1/admin/default-categories:
+    get:
+      operationId: listDefaultCategories
+      summary: List the categories new groups start with (site admins only)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The default categories by name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DefaultCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    post:
+      operationId: createDefaultCategory
+      summary: Add a default category (site admins only)
+      description: Groups that already exist keep their own list.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+      responses:
+        "201":
+          description: The new category.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DefaultCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/v1/admin/default-categories/{categoryId}:
+    parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      operationId: updateDefaultCategory
+      summary: Rename or archive a default category (site admins only)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                isArchived:
+                  type: boolean
+      responses:
+        "200":
+          description: The updated category.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DefaultCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Category not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    delete:
+      operationId: deleteDefaultCategory
+      summary: Delete a default category (site admins only)
+      description: Groups that already exist keep their own copy.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Category not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
 components:
   parameters:
     ExpenseId:
@@ -890,6 +1128,69 @@ components:
       properties:
         read:
           type: boolean
+    AdminUser:
+      type: object
+      required:
+        [
+          id,
+          email,
+          displayName,
+          createdAt,
+          suspendedAt,
+          isSiteAdmin,
+          groupCount,
+          expenseCount,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        displayName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        suspendedAt:
+          type: [string, "null"]
+          format: date-time
+        isSiteAdmin:
+          type: boolean
+        groupCount:
+          type: integer
+          description: Groups the user belongs to.
+        expenseCount:
+          type: integer
+          description: Expenses the user logged. A count only, never amounts.
+    AdminGroup:
+      type: object
+      required: [id, name, createdAt, memberCount, expenseCount]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        memberCount:
+          type: integer
+        expenseCount:
+          type: integer
+          description: A count only, never amounts.
+    DefaultCategory:
+      type: object
+      required: [id, name, isArchived]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        isArchived:
+          type: boolean
     TokenRequest:
       type: object
       required: [email, password]
@@ -949,6 +1250,12 @@ components:
             $ref: "#/components/schemas/ApiError"
     Forbidden:
       description: Not allowed for this user
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Conflict:
+      description: The request conflicts with the current state
       content:
         application/json:
           schema:

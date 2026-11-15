@@ -591,6 +591,29 @@ export type Database = {
     };
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string };
+      admin_list_groups: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          created_at: string;
+          expense_count: number;
+          id: string;
+          member_count: number;
+          name: string;
+        }[];
+      };
+      admin_list_users: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          created_at: string;
+          display_name: string;
+          email: string;
+          expense_count: number;
+          group_count: number;
+          id: string;
+          is_site_admin: boolean;
+          suspended_at: string;
+        }[];
+      };
       create_expense: {
         Args: { p_expense: Json; p_shares: Json };
         Returns: string;
