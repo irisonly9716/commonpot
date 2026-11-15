@@ -595,6 +595,246 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "500":
           $ref: "#/components/responses/ServerError"
+  /api/v1/groups/{groupId}/members/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/UserId"
+    patch:
+      operationId: updateGroupMemberRole
+      summary: Promote a member to admin, or set an admin back to member
+      description: >-
+        Admins only. You cannot change your own role: promote someone else, then
+        leave the group.
+      tags: [Groups]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [admin, member]
+      responses:
+        "200":
+          description: The member's new role.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [userId, role]
+                properties:
+                  userId:
+                    type: string
+                    format: uuid
+                  role:
+                    type: string
+                    enum: [admin, member]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: You tried to change your own role, or the group would be left without an admin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    delete:
+      operationId: removeGroupMember
+      summary: Remove a member, or leave the group
+      description: >-
+        An admin removes another member. When `userId` is your own id you leave
+        the group. If the member's balance is not zero the answer is 409
+        `BALANCE_NOT_ZERO` with `balanceCents` (positive when they are owed,
+        negative when they owe). An admin can repeat the request with
+        `?confirm=true` to remove them anyway. Leaving never accepts `confirm`:
+        settle up first. The last admin cannot leave (409 `LAST_ADMIN`).
+      tags: [Groups]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: confirm
+          in: query
+          required: false
+          description: Set to `true` to remove a member whose balance is not zero. Ignored when leaving.
+          schema:
+            type: string
+            enum: ["true"]
+      responses:
+        "204":
+          description: The member was removed, or you left the group.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: >-
+            `BALANCE_NOT_ZERO` (the response includes `balanceCents`) or
+            `LAST_ADMIN`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberRemovalError"
+              examples:
+                balance:
+                  summary: A balance needs confirmation
+                  value:
+                    error:
+                      code: BALANCE_NOT_ZERO
+                      message: This member has a balance. Confirm to remove them anyway
+                      balanceCents: -500
+                lastAdmin:
+                  summary: The last admin cannot leave
+                  value:
+                    error:
+                      code: LAST_ADMIN
+                      message: A group needs at least one admin. Promote someone before you leave
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/v1/groups/{groupId}/categories:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    get:
+      operationId: listGroupCategories
+      summary: List the group's categories
+      description: Archived categories are included. Every member can read them.
+      tags: [Groups]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: The group's categories by name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GroupCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    post:
+      operationId: createGroupCategory
+      summary: Add a category (admins only)
+      tags: [Groups]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+      responses:
+        "201":
+          description: The new category.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: The group already has a category with that name.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /api/v1/groups/{groupId}/categories/{categoryId}:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      operationId: updateGroupCategory
+      summary: Rename or archive a category (admins only)
+      description: >-
+        Archiving keeps the category on the expenses that already use it. It is
+        just not offered for new ones.
+      tags: [Groups]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                isArchived:
+                  type: boolean
+      responses:
+        "200":
+          description: The updated category.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupCategory"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: The group already has a category with that name.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
 components:
   parameters:
     ExpenseId:
@@ -922,6 +1162,35 @@ components:
               format: uuid
             email:
               type: [string, "null"]
+    GroupCategory:
+      type: object
+      required: [id, name, isArchived]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        isArchived:
+          type: boolean
+    MemberRemovalError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [BALANCE_NOT_ZERO, LAST_ADMIN]
+            message:
+              type: string
+            balanceCents:
+              type: integer
+              description: >-
+                Only with `BALANCE_NOT_ZERO`. Positive when the member is owed
+                money, negative when they owe it, in cents.
     ApiError:
       type: object
       required: [error]
