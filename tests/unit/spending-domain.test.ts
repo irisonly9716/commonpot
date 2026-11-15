@@ -224,8 +224,8 @@ describe("US8 see where the money goes", () => {
     it("only counts the chosen month", () => {
       const rows = memberShares(expenses, "2026-09", [me, other]);
       expect(rows.map((r) => [r.userId, r.amountCents])).toEqual([
-        [other, 2000],
         [me, 2000],
+        [other, 2000],
       ]);
     });
 
