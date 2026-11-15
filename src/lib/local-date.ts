@@ -5,3 +5,8 @@ export function getLocalDateString(date = new Date()): string {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
+/** This month in the user's own time zone, as YYYY-MM. */
+export function getLocalMonthString(date = new Date()): string {
+  return getLocalDateString(date).slice(0, 7);
+}
