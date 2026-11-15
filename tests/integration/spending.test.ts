@@ -7,7 +7,11 @@ import {
 } from "../../src/app/api/v1/groups/[groupId]/expenses/route";
 import { loadGroupSpending } from "@/lib/data/spending";
 import type { Database } from "@/lib/db/database.types";
-import { monthTotal, spendingByCategory } from "@/lib/domain/spending";
+import {
+  memberShares,
+  monthTotal,
+  spendingByCategory,
+} from "@/lib/domain/spending";
 
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";
@@ -185,5 +189,37 @@ describe("US8 spending for the insights page", () => {
         await userIdOf(token),
       ),
     ).toBeNull();
+  });
+
+  it("lets every member see each member's share, adding up to the group total", async () => {
+    const month = "2026-11";
+    const memberToken = await signIn("member@example.com");
+    const spending = await loadGroupSpending(
+      clientFor(memberToken),
+      groupId,
+      month,
+      memberId,
+    );
+    expect(spending).not.toBeNull();
+    const names = Object.fromEntries(
+      spending!.members.map((m) => [m.id, m.displayName]),
+    );
+    // A plain member sees the whole member list, not only themselves.
+    expect(Object.keys(names)).toEqual(
+      expect.arrayContaining([adminId, memberId]),
+    );
+    expect(names[adminId]).toBeTruthy();
+
+    const rows = memberShares(
+      spending!.expenses,
+      month,
+      spending!.members.map((m) => m.id),
+    );
+    const total = monthTotal(spending!.expenses, { kind: "group" }, month);
+    expect(total).toBeGreaterThan(0);
+    expect(rows.reduce((sum, row) => sum + row.amountCents, 0)).toBe(total);
+    expect(rows.find((row) => row.userId === adminId)!.amountCents).toBe(
+      monthTotal(spending!.expenses, { kind: "me", userId: adminId }, month),
+    );
   });
 });

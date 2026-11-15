@@ -27,6 +27,10 @@ afterEach(() => {
 });
 
 const me = "user-me";
+const members = [
+  { id: me, displayName: "Me Myself" },
+  { id: "other", displayName: "Other Person" },
+];
 const expenses: SpendingExpense[] = [
   {
     id: "a",
@@ -69,6 +73,7 @@ function renderView(
       month={month}
       latestMonth={extra.latestMonth ?? "2026-10"}
       monthFromUrl={extra.monthFromUrl ?? true}
+      members={members}
       expenses={expenses}
     />,
   );
@@ -83,7 +88,7 @@ describe("US8 insights view", () => {
       "aria-pressed",
       "true",
     );
-    const list = within(screen.getByRole("list"));
+    const list = within(screen.getByRole("list", { name: "Categories" }));
     expect(list.getByText("Groceries")).toBeVisible();
     expect(list.getByText("$90.00 · 82%")).toBeVisible();
   });
@@ -93,7 +98,9 @@ describe("US8 insights view", () => {
     await userEvent.click(screen.getByRole("button", { name: "Me" }));
     expect(screen.getByText("Total $40.00")).toBeVisible();
     expect(
-      within(screen.getByRole("list")).getByText("$30.00 · 75%"),
+      within(screen.getByRole("list", { name: "Categories" })).getByText(
+        "$30.00 · 75%",
+      ),
     ).toBeVisible();
   });
 
@@ -182,6 +189,66 @@ describe("US8 insights view", () => {
       vi.setSystemTime(new Date(2026, 10, 14, 9, 0));
       renderView("2026-11", { monthFromUrl: false, latestMonth: "2026-11" });
       expect(replace).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("each member's share (US9)", () => {
+    it("shows every member's share of the month in the Group view", () => {
+      renderView();
+      expect(
+        screen.getByRole("heading", { name: "Each member's share" }),
+      ).toBeVisible();
+      const list = within(screen.getByRole("list", { name: "Members" }));
+      expect(list.getByText("Other Person")).toBeVisible();
+      expect(list.getByText("$70.00 · 64%")).toBeVisible();
+      expect(list.getByText("Me Myself")).toBeVisible();
+      expect(list.getByText("$40.00 · 36%")).toBeVisible();
+      expect(
+        screen.getByRole("img", { name: /each member's share/i }),
+      ).toBeVisible();
+    });
+
+    it("is hidden in the Me view, which is only about me", async () => {
+      renderView();
+      await userEvent.click(screen.getByRole("button", { name: "Me" }));
+      expect(
+        screen.queryByRole("heading", { name: "Each member's share" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("has a table with the same numbers and a total", async () => {
+      renderView();
+      await userEvent.click(screen.getByRole("button", { name: "Table" }));
+      const table = screen.getByRole("table", {
+        name: "Each member's share, October 2026",
+      });
+      expect(within(table).getByText("Other Person")).toBeVisible();
+      expect(within(table).getByText("$70.00")).toBeVisible();
+      expect(within(table).getByText("Me Myself")).toBeVisible();
+      expect(within(table).getByText("$40.00")).toBeVisible();
+      expect(within(table).getByText("$110.00")).toBeVisible();
+    });
+
+    it("names someone who left as a former member", () => {
+      render(
+        <InsightsView
+          groupName="Maple St. Apartment"
+          currency="USD"
+          currentUserId={me}
+          month="2026-10"
+          latestMonth="2026-10"
+          monthFromUrl
+          members={[members[0]]}
+          expenses={expenses}
+        />,
+      );
+      const list = within(screen.getByRole("list", { name: "Members" }));
+      expect(list.getByText("Former member")).toBeVisible();
+    });
+
+    it("says so when nobody has a share in the month", () => {
+      renderView("2026-08");
+      expect(screen.getByText("No shares in August 2026.")).toBeVisible();
     });
   });
 });
