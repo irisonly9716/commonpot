@@ -60,6 +60,6 @@ Pull requests not linked to an issue: [#22](https://github.com/irisonly9716/comm
 
 <!-- Both partners check this section in the #19 review. -->
 
-- **Arianna:** planning and project rules (the PRD, AGENTS.md and the sprint plans), the Next.js scaffold, the database schema with RLS and seed data, and the money core: logging and splitting expenses, editing and deleting them, balances and settle-up, live updates and the personal ledger. Also this README and the architecture docs.
-- **Jay:** the CI pipeline, DESIGN.md and the mockups, sign-in, groups and invites, the public API docs and API sign-in, insights charts, member and category management, the site admin dashboard, and production: the hosted Supabase project, its keep-alive and the deploy.
+- **Arianna:** planning and project rules (the PRD, AGENTS.md and the sprint plans), the Next.js scaffold, the database schema with RLS and seed data, and the money core: logging and splitting expenses, editing and deleting them, balances and settle-up, live updates and the personal ledger. Also connecting Vercel to the repo and setting its environment variables, this README and the architecture docs.
+- **Jay:** the CI pipeline, DESIGN.md and the mockups, sign-in, groups and invites, the public API docs and API sign-in, insights charts, member and category management, the site admin dashboard, and production data: the hosted Supabase project and its migrations, and the keep-alive.
 - **Both:** sprint planning and retros, daily standups on Slack, and reviewing each other's pull requests.

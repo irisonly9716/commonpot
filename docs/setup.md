@@ -62,14 +62,12 @@ Never edit a migration that is already on `main`; add a new one. The one excepti
 | ----------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------- |
 | Local       | Local Supabase in Docker               | `npx supabase status` → `.env.local`                                                                         | Yes       |
 | CI          | A fresh local Supabase inside each job | [`.github/scripts/supabase-env.sh`](../.github/scripts/supabase-env.sh) exports the job's own throwaway keys | Yes       |
-| Preview     | _To be confirmed by Jay (#3)_          | Vercel environment variables, Preview scope                                                                  | No        |
+| Preview     | The same hosted project as Production  | Vercel environment variables, Preview scope                                                                  | No        |
 | Production  | The hosted Supabase project            | Vercel environment variables, Production scope                                                               | No        |
 
-CI never uses production keys.
+CI never uses production keys. Preview deploys share the production database for now, so a pull request preview can change real data: don't try destructive things there. A second free Supabase project, with its own keys in the Preview scope, would separate them.
 
 ## Deploy
-
-> Draft from what is set up so far; Jay (owner of #3) checks it in the #19 review.
 
 ### 1. The hosted Supabase project (once)
 
@@ -79,13 +77,19 @@ CI never uses production keys.
    ```bash
    npx supabase login
    npx supabase link --project-ref <project-ref>
-   npx supabase db push        # applies every migration the project doesn't have yet
+   npx supabase db push --linked   # applies every migration the project doesn't have yet
    ```
 
-   `db push` never runs `supabase/seed.sql`, so production starts empty. The migrations call pgcrypto functions as `extensions.gen_random_bytes(...)`, because on hosted Supabase that schema isn't on the CLI's search path (#52); a unit test fails if a migration forgets the prefix.
+   `db push` never runs `supabase/seed.sql`, so production starts empty. Never run `supabase db reset` or `db push --include-seed` against the hosted project: the seed creates test accounts with a known password. Run `npx supabase db push --dry-run --linked` first to see which migrations it would apply. The migrations call pgcrypto functions as `extensions.gen_random_bytes(...)`, because on hosted Supabase that schema isn't on the CLI's search path (#52); a unit test fails if a migration forgets the prefix.
 
 3. In **Authentication → URL Configuration**, set the Site URL to the production URL and add the preview URLs to the redirect URLs.
-4. In **Authentication → Sign In / Providers → Email**, decide whether new accounts must confirm their email. It is off locally and on by default in hosted projects; if it stays on, a new user has to click the link in the email before they can sign in.
+4. In **Authentication → Sign In / Providers → Email**, turn **Confirm email** off and set **Minimum password length** to 8. The app expects a session right after sign-up, as the local setup does. With confirmation on, a new user lands on a dead end until they click a link in the email. Hosted projects have it on by default.
+5. After the first deploy, sign up in the app once. Then make that account the first site admin in the **SQL editor** (the app itself can never set this flag):
+
+   ```sql
+   update public.profiles set is_site_admin = true
+   where id = (select id from auth.users where email = 'you@example.com');
+   ```
 
 ### 2. Vercel (once)
 
@@ -98,11 +102,13 @@ CI never uses production keys.
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon / publishable key                               |
    | `SUPABASE_SERVICE_ROLE_KEY`     | service_role / secret key (server only)              |
 
+   The service-role key is used only to suspend users (site admin dashboard). Without it, suspending fails with a JSON error and the rest of the app works.
+
 3. Production deploys from `main` on every merge. Every pull request gets a preview deploy, and Vercel posts its URL on the PR.
 
 ### 3. Every schema change
 
-After a PR with a new migration merges, run `npx supabase db push` from an up-to-date `main` with the project linked. Until then, production runs the new code against the old schema, so do it right away. This is the only way the production schema changes: never edit tables in the dashboard.
+After a PR with a new migration merges, run `npx supabase db push --linked` from an up-to-date `main` with the project linked. Until then, production runs the new code against the old schema, so do it right away. This is the only way the production schema changes: never edit tables in the dashboard.
 
 ### 4. Keep-alive
 
