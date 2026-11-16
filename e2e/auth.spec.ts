@@ -20,6 +20,22 @@ test.describe("US1 sign in safely", () => {
     ).toBeVisible();
   });
 
+  test("lands on their groups after signing in from the home page (#56)", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/sign-in\?next=%2F$/);
+
+    await page.getByLabel("Email").fill(memberEmail);
+    await page.getByLabel("Password").fill(memberPassword);
+    await page.getByRole("button", { name: "Sign in" }).click();
+
+    await expect(page).toHaveURL(/\/groups$/);
+    await expect(
+      page.getByRole("heading", { name: "Your groups" }),
+    ).toBeVisible();
+  });
+
   test("shows the same error for a wrong password and an unknown email", async ({
     page,
   }) => {
