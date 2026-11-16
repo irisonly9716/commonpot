@@ -172,10 +172,24 @@ describe("US12 site admin API: lists show counts, never amounts", () => {
 
   it("never includes amounts or expense details anywhere", async () => {
     const token = await signIn("site-admin@example.com");
-    const text =
-      (await (await listUsers(call("GET", token))).text()) +
-      (await (await listGroups(call("GET", token))).text());
-    expect(text).not.toMatch(/amount|cents|description|8400|Groceries/i);
+    // Check the field names, not the text. Other tests create groups and
+    // users whose names can contain words like "Groceries".
+    const keys = (value: unknown): string[] =>
+      Array.isArray(value)
+        ? value.flatMap(keys)
+        : value && typeof value === "object"
+          ? Object.entries(value).flatMap(([key, inner]) => [
+              key,
+              ...keys(inner),
+            ])
+          : [];
+    const found = [
+      ...keys(await (await listUsers(call("GET", token))).json()),
+      ...keys(await (await listGroups(call("GET", token))).json()),
+    ];
+    expect(
+      found.filter((key) => /amount|cents|description|total/i.test(key)),
+    ).toEqual([]);
   });
 });
 
