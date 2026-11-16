@@ -49,6 +49,7 @@ export default async function GroupInsightsPage({
       month={month}
       latestMonth={latestMonth}
       monthFromUrl={monthFromUrl}
+      members={spending.members}
       expenses={spending.expenses}
     />
   );

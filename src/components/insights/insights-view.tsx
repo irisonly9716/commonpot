@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 
 import {
+  memberShares,
   monthTotal,
   monthlyTrend,
   shiftMonth,
@@ -33,11 +34,33 @@ type InsightsViewProps = {
    * replaces it if the two differ.
    */
   monthFromUrl: boolean;
+  /** The group's current members, so each one is listed with their share. */
+  members: Array<{ id: string; displayName: string }>;
   /** Expenses for `month` and the five months before it. */
   expenses: SpendingExpense[];
 };
 
 const PICKER_MONTHS = 12;
+
+/**
+ * A name for each person. Someone who has left is "Former member", and two
+ * people with the same name get a number, so labels stay unique.
+ */
+function memberLabels(
+  userIds: string[],
+  members: Array<{ id: string; displayName: string }>,
+): string[] {
+  const names = userIds.map(
+    (id) =>
+      members.find((member) => member.id === id)?.displayName ??
+      "Former member",
+  );
+  return names.map((name, index) => {
+    const same = names.filter((other) => other === name).length;
+    if (same === 1) return name;
+    return `${name} (${names.slice(0, index + 1).filter((other) => other === name).length})`;
+  });
+}
 
 function subscribeToNothing(): () => void {
   return () => {};
@@ -86,6 +109,7 @@ export function InsightsView({
   month,
   latestMonth,
   monthFromUrl,
+  members,
   expenses,
 }: InsightsViewProps) {
   const router = useRouter();
@@ -112,6 +136,16 @@ export function InsightsView({
   const total = monthTotal(expenses, scope, month);
   const categories = spendingByCategory(expenses, scope, month);
   const trend = monthlyTrend(expenses, scope, month);
+  const shares = memberShares(
+    expenses,
+    month,
+    members.map((member) => member.id),
+  );
+  const shareLabels = memberLabels(
+    shares.map((share) => share.userId),
+    members,
+  );
+  const sharesTotal = shares.reduce((sum, share) => sum + share.amountCents, 0);
   const monthName = formatMonth(month);
   const newest = [latestMonth, month, localMonth ?? latestMonth].sort().at(-1)!;
   const pickerMonths = Array.from({ length: PICKER_MONTHS }, (_, i) =>
@@ -193,7 +227,7 @@ export function InsightsView({
                 amountCents: row.amountCents,
               }))}
             />
-            <ul className="flex flex-col gap-1">
+            <ul aria-label="Categories" className="flex flex-col gap-1">
               {categories.map((row) => (
                 <li key={row.category} className="flex justify-between">
                   <span>{row.category}</span>
@@ -218,6 +252,61 @@ export function InsightsView({
           />
         )}
       </section>
+
+      {who === "Group" ? (
+        <section
+          aria-labelledby="member-shares"
+          className="flex flex-col gap-3"
+        >
+          <div className="flex items-baseline justify-between">
+            <h2
+              id="member-shares"
+              className="text-muted text-sm font-semibold tracking-wide uppercase"
+            >
+              Each member&apos;s share
+            </h2>
+            <p className="text-muted text-sm">{monthName}</p>
+          </div>
+          {sharesTotal === 0 ? (
+            <p>No shares in {monthName}.</p>
+          ) : display === "Chart" ? (
+            <>
+              <SpendingChart
+                direction="rows"
+                currency={currency}
+                description={`Each member's share, ${monthName}. Switch to Table for exact numbers.`}
+                points={shares.map((share, index) => ({
+                  label: shareLabels[index],
+                  amountCents: share.amountCents,
+                }))}
+              />
+              <ul aria-label="Members" className="flex flex-col gap-1">
+                {shares.map((share, index) => (
+                  <li key={share.userId} className="flex justify-between">
+                    <span>{shareLabels[index]}</span>
+                    <span>
+                      {formatMoney(share.amountCents, currency)} ·{" "}
+                      {share.percent}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <ChartTable
+              caption={`Each member's share, ${monthName}`}
+              firstColumn="Member"
+              currency={currency}
+              totalCents={sharesTotal}
+              rows={shares.map((share, index) => ({
+                label: shareLabels[index],
+                amountCents: share.amountCents,
+                detail: `${share.percent}%`,
+              }))}
+            />
+          )}
+        </section>
+      ) : null}
 
       <section aria-labelledby="last-six" className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between">

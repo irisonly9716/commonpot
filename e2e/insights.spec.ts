@@ -67,6 +67,16 @@ test.describe("US8 see where the money goes", () => {
       trend.getByRole("row", { name: /November 2026/ }),
     ).toContainText(usd(expectedCents));
 
+    // Each member's share: every member can see everyone's, and it adds up.
+    const shares = page.getByRole("table", {
+      name: /each member's share/i,
+    });
+    await expect(shares.getByText("Admin User")).toBeVisible();
+    await expect(shares.getByText("Member User")).toBeVisible();
+    await expect(shares.getByRole("row").last()).toContainText(
+      usd(expectedCents),
+    );
+
     // Me shows my share, which can't be more than the group's total.
     await page.getByRole("button", { name: "Me" }).click();
     await expect(page.getByRole("button", { name: "Me" })).toHaveAttribute(
@@ -77,6 +87,9 @@ test.describe("US8 see where the money goes", () => {
       "Total ",
       "",
     );
+    await expect(
+      page.getByRole("heading", { name: "Each member's share" }),
+    ).toHaveCount(0);
     const toCents = (text: string) =>
       Math.round(Number(text.replace(/[^0-9.]/g, "")) * 100);
     expect(toCents(myTotal)).toBeLessThanOrEqual(expectedCents);
