@@ -94,4 +94,37 @@ test.describe("US4 see changes as they happen", () => {
     await admin.context.close();
     await member.context.close();
   });
+
+  test("catches up even when the first request after reconnecting fails (#64)", async ({
+    browser,
+  }) => {
+    const admin = await openExpensesAs(browser, "admin@example.com");
+    const member = await openExpensesAs(browser, "member@example.com");
+    const description = `Flaky network lunch ${Date.now()}`;
+
+    await member.context.setOffline(true);
+    await expect(member.page.getByText("Reconnecting…")).toBeVisible();
+    await addExpense(admin.page, description);
+
+    // The network is back, but the first request still fails, as it can on a
+    // connection that is just coming back.
+    let failedOnce = false;
+    await member.page.route(
+      `**${expensesPath.replace("/groups", "/api/v1/groups")}`,
+      async (route) => {
+        if (failedOnce) return route.continue();
+        failedOnce = true;
+        await route.abort("internetdisconnected");
+      },
+    );
+    await member.context.setOffline(false);
+
+    await expect(
+      member.page.getByRole("article", { name: description }),
+    ).toHaveCount(1, { timeout: 10_000 });
+    expect(failedOnce).toBe(true);
+
+    await admin.context.close();
+    await member.context.close();
+  });
 });
