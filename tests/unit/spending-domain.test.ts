@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   UNCATEGORIZED,
+  memberShares,
   monthTotal,
   monthlyTrend,
   shiftMonth,
@@ -183,6 +184,66 @@ describe("US8 see where the money goes", () => {
       expect(shiftMonth("2026-01", -1)).toBe("2025-12");
       expect(shiftMonth("2025-12", 1)).toBe("2026-01");
       expect(shiftMonth("2026-10", -5)).toBe("2026-05");
+    });
+  });
+
+  describe("memberShares", () => {
+    const group = { kind: "group" } as const;
+
+    it("adds up each person's shares for the month", () => {
+      const rows = memberShares(expenses, "2026-10", [me, other]);
+      expect(rows.map((r) => [r.userId, r.amountCents])).toEqual([
+        [other, 7500],
+        [me, 4001],
+      ]);
+    });
+
+    it("adds up to the group's total for the month", () => {
+      const rows = memberShares(expenses, "2026-10", [me, other]);
+      expect(rows.reduce((sum, r) => sum + r.amountCents, 0)).toBe(
+        monthTotal(expenses, group, "2026-10"),
+      );
+    });
+
+    it("lists members who have no share this month with 0", () => {
+      const rows = memberShares(expenses, "2026-10", [me, other, "user-new"]);
+      expect(rows.find((r) => r.userId === "user-new")).toEqual({
+        userId: "user-new",
+        amountCents: 0,
+        percent: 0,
+      });
+      expect(rows).toHaveLength(3);
+    });
+
+    it("keeps a share held by someone who is no longer a member", () => {
+      const rows = memberShares(expenses, "2026-10", [me]);
+      expect(rows.map((r) => r.userId)).toEqual([other, me]);
+      expect(rows[0].amountCents).toBe(7500);
+    });
+
+    it("only counts the chosen month", () => {
+      const rows = memberShares(expenses, "2026-09", [me, other]);
+      expect(rows.map((r) => [r.userId, r.amountCents])).toEqual([
+        [me, 2000],
+        [other, 2000],
+      ]);
+    });
+
+    it("gives whole-number percents that add up to 100", () => {
+      const rows = memberShares(expenses, "2026-10", [me, other]);
+      expect(rows.map((r) => r.percent)).toEqual([65, 35]);
+      expect(rows.reduce((sum, r) => sum + r.percent, 0)).toBe(100);
+    });
+
+    it("has 0 percent for everyone when nothing was spent", () => {
+      const rows = memberShares(expenses, "2025-01", [me, other]);
+      expect(rows.map((r) => r.percent)).toEqual([0, 0]);
+      expect(rows.map((r) => r.amountCents)).toEqual([0, 0]);
+    });
+
+    it("sorts equal amounts by user id so the order never depends on input", () => {
+      const rows = memberShares(expenses, "2026-09", [other, me]);
+      expect(rows.map((r) => r.userId)).toEqual([me, other]);
     });
   });
 });
