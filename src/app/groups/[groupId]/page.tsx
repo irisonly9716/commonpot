@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
 import { CategoryList } from "@/components/groups/category-list";
+import { GroupNav } from "@/components/groups/group-nav";
 import { InviteSection } from "@/components/groups/invite-section";
 import { MemberList } from "@/components/groups/member-list";
 import { getGroupDetail, listActiveInvites } from "@/lib/data/groups";
@@ -52,17 +53,10 @@ export default async function GroupPage({
           All groups
         </Link>
         <h1 className="text-2xl font-semibold">{group.name}</h1>
-        <p className="text-sm text-gray-700">Currency: {group.currency}</p>
+        <p className="text-muted text-sm">Currency: {group.currency}</p>
       </div>
 
-      <nav aria-label="Group pages" className="flex gap-4">
-        <Link href={`/groups/${group.id}/expenses`} className="underline">
-          Expenses
-        </Link>
-        <Link href={`/groups/${group.id}/balances`} className="underline">
-          Balances
-        </Link>
-      </nav>
+      <GroupNav current="home" groupId={group.id} />
 
       <MemberList
         groupId={group.id}

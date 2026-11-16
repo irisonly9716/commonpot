@@ -39,7 +39,7 @@ export function AcceptInvite({ token }: { token: string }) {
   return (
     <main className="mx-auto w-full max-w-xl p-6">
       {message ? (
-        <p role="alert" className="font-medium text-red-800">
+        <p role="alert" className="text-owes font-medium">
           {message}
         </p>
       ) : (

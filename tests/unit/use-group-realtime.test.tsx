@@ -236,6 +236,50 @@ describe("US4 see changes as they happen: useGroupRealtime", () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 
+  it("tries again every second when catching up fails, until it works (#64)", async () => {
+    const onChange = vi
+      .fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValue(true);
+    renderHook(() => useGroupRealtime(groupId, { userId, onChange }));
+    await act(async () => {});
+    const channel = realtime.channels.at(-1)!;
+
+    act(() => channel.report("SUBSCRIBED"));
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    expect(onChange).toHaveBeenCalledTimes(1);
+
+    await act(() => vi.advanceTimersByTimeAsync(1000));
+    expect(onChange).toHaveBeenCalledTimes(2);
+    await act(() => vi.advanceTimersByTimeAsync(1000));
+    expect(onChange).toHaveBeenCalledTimes(3);
+
+    // The third try worked, so there are no more.
+    await act(() => vi.advanceTimersByTimeAsync(10_000));
+    expect(onChange).toHaveBeenCalledTimes(3);
+  });
+
+  it("stops trying after five failed retries, and waits while offline (#64)", async () => {
+    const onChange = vi.fn().mockResolvedValue(false);
+    renderHook(() => useGroupRealtime(groupId, { userId, onChange }));
+    await act(async () => {});
+    const channel = realtime.channels.at(-1)!;
+
+    act(() => channel.report("SUBSCRIBED"));
+    await act(() => vi.advanceTimersByTimeAsync(250 + 10_000));
+    expect(onChange).toHaveBeenCalledTimes(6);
+
+    // Going offline stops the retries; coming back online starts again.
+    act(() => channel.insert("activity"));
+    act(() => setOnline(false));
+    await act(() => vi.advanceTimersByTimeAsync(5000));
+    expect(onChange).toHaveBeenCalledTimes(6);
+    act(() => setOnline(true));
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    expect(onChange).toHaveBeenCalledTimes(7);
+  });
+
   it("stops listening when the component unmounts", async () => {
     const { onChange, channel, unmount } = await mountHook();
     act(() => channel.report("SUBSCRIBED"));

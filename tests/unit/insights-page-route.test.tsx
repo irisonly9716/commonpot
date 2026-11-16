@@ -42,6 +42,7 @@ describe("US8 insights page", () => {
     loadGroupSpending.mockResolvedValue({
       groupName: "Flat",
       currency: "USD",
+      members: [{ id: "m1", displayName: "Maya" }],
       expenses: [],
     });
   });
@@ -107,5 +108,12 @@ describe("US8 insights page", () => {
       props: { monthFromUrl: boolean };
     };
     expect(badMonth.props.monthFromUrl).toBe(false);
+  });
+
+  it("gives the view the group's members, for the member shares", async () => {
+    const element = (await renderPage()) as {
+      props: { members: Array<{ id: string; displayName: string }> };
+    };
+    expect(element.props.members).toEqual([{ id: "m1", displayName: "Maya" }]);
   });
 });

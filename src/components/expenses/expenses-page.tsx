@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { ActivityFeed } from "@/components/activity/activity-feed";
 import { AlertList } from "@/components/alerts/alert-list";
+import { GroupNav } from "@/components/groups/group-nav";
 import { ConnectionStatus } from "@/components/realtime/connection-status";
 import type { ActivityItem } from "@/lib/data/activity";
 import type { AlertItem } from "@/lib/data/alerts";
@@ -44,18 +45,24 @@ export function ExpensesPage({
   const router = useRouter();
   const [expenses, setExpenses] = useState(initialExpenses);
 
-  async function refreshExpenses() {
+  /** Refetches the page; false when it failed, so live updates try again. */
+  async function refreshExpenses(): Promise<boolean> {
     const response = await fetch(`/api/v1/groups/${groupId}/expenses`).catch(
       () => null,
     );
     // The network is down: keep the page as it is. A server refresh would fail
-    // too and reload the whole page; the next change or reconnect catches up.
-    if (!response) return;
+    // too and reload the whole page; useGroupRealtime tries again (#64).
+    if (!response) return false;
     if (response.ok) {
       setExpenses((await response.json()) as ExpenseListItem[]);
     }
+    // The network can drop while the request is in flight. An offline server
+    // refresh makes Next.js reload the whole page into the browser's offline
+    // error page, so leave it to the "online" catch-up instead (#64).
+    if (!navigator.onLine) return false;
     // Re-renders the server data, including the activity feed and alerts.
     router.refresh();
+    return response.ok;
   }
 
   // Other members' changes arrive live and refresh the page the same way (US4).
@@ -66,9 +73,7 @@ export function ExpensesPage({
 
   return (
     <main>
-      <nav aria-label="Group pages">
-        <a href={`/groups/${groupId}/balances`}>Balances and settle up</a>
-      </nav>
+      <GroupNav current="expenses" groupId={groupId} />
       <ConnectionStatus status={status} />
       <AlertList alerts={alerts} />
       <ExpenseForm

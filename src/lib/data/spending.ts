@@ -3,9 +3,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/db/database.types";
 import { shiftMonth, type SpendingExpense } from "@/lib/domain/spending";
 
+export type SpendingMember = { id: string; displayName: string };
+
 export type GroupSpending = {
   groupName: string;
   currency: string;
+  members: SpendingMember[];
   expenses: SpendingExpense[];
 };
 
@@ -25,7 +28,7 @@ export async function loadGroupSpending(
   const from = `${shiftMonth(endMonth, -5)}-01`;
   const before = `${shiftMonth(endMonth, 1)}-01`;
 
-  const [group, membership, expenses] = await Promise.all([
+  const [group, membership, members, expenses] = await Promise.all([
     supabase
       .from("groups")
       .select("name, currency")
@@ -37,6 +40,7 @@ export async function loadGroupSpending(
       .eq("group_id", groupId)
       .eq("user_id", userId)
       .maybeSingle(),
+    supabase.rpc("group_member_profiles", { p_group_id: groupId }),
     supabase
       .from("expenses")
       .select(
@@ -47,7 +51,7 @@ export async function loadGroupSpending(
       .lt("expense_date", before),
   ]);
 
-  if (group.error || membership.error || expenses.error) {
+  if (group.error || membership.error || members.error || expenses.error) {
     throw new Error("Could not load group spending");
   }
   if (!group.data || !membership.data) return null;
@@ -55,6 +59,12 @@ export async function loadGroupSpending(
   return {
     groupName: group.data.name,
     currency: group.data.currency,
+    members: [...members.data]
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((member) => ({
+        id: member.id,
+        displayName: member.display_name || "Unnamed member",
+      })),
     expenses: (expenses.data ?? []).map((expense) => ({
       id: expense.id,
       expenseDate: expense.expense_date,

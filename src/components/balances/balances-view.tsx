@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { GroupNav } from "@/components/groups/group-nav";
 import type { NamedBalance } from "@/lib/data/balances";
 import type { BreakdownItem, Settlement } from "@/lib/domain/balances";
 import { formatMoney } from "@/lib/format-money";
@@ -38,6 +39,13 @@ function balanceWords(balance: NamedBalance, isYou: boolean): string {
   return `${balance.displayName} is settled up`;
 }
 
+/** The color repeats the sign and the words; it never carries meaning alone. */
+function amountClass(balance: NamedBalance): string | undefined {
+  if (balance.status === "owed") return "amount-owed";
+  if (balance.status === "owes") return "amount-owes";
+  return undefined;
+}
+
 export function BalancesView({
   groupId,
   currentUserId,
@@ -58,49 +66,68 @@ export function BalancesView({
     );
   };
   const total = balances.reduce((sum, b) => sum + b.balanceCents, 0);
+  const yours = balances.find((b) => b.userId === currentUserId);
+  const others = balances.filter((b) => b.userId !== currentUserId);
+
+  // One balance as a button that opens the expenses and payments behind it.
+  const renderBalance = (balance: NamedBalance, isYou: boolean) => {
+    const isOpen = openUserId === balance.userId;
+    const items = breakdowns[balance.userId] ?? [];
+    return (
+      <>
+        <button
+          aria-controls={`breakdown-${balance.userId}`}
+          aria-expanded={isOpen}
+          className={isYou ? "row-button display" : "row-button"}
+          onClick={() => setOpenUserId(isOpen ? null : balance.userId)}
+          type="button"
+        >
+          <span>{balanceWords(balance, isYou)}</span>{" "}
+          <span className={amountClass(balance)}>
+            {signedMoney(balance.balanceCents, currency)}
+          </span>
+        </button>
+        {isOpen && (
+          <ul id={`breakdown-${balance.userId}`}>
+            {items.length === 0 && <li>Nothing yet.</li>}
+            {items.map((item) => (
+              <li
+                className="gap-x-space-3 flex flex-wrap justify-between"
+                key={`${item.kind}-${item.id}`}
+              >
+                <span>{item.description}</span>{" "}
+                <time className="caption" dateTime={item.date}>
+                  {item.date}
+                </time>{" "}
+                <span>{signedMoney(item.effectCents, currency)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </>
+    );
+  };
 
   return (
     <main>
-      <nav aria-label="Group pages">
-        <a href={`/groups/${groupId}/expenses`}>Expenses</a>
-      </nav>
+      <GroupNav current="balances" groupId={groupId} />
 
       <section aria-labelledby="balances-heading">
         <h1 id="balances-heading">Balances</h1>
-        <ul>
-          {balances.map((balance) => {
-            const isOpen = openUserId === balance.userId;
-            const items = breakdowns[balance.userId] ?? [];
-            return (
-              <li key={balance.userId}>
-                <button
-                  aria-controls={`breakdown-${balance.userId}`}
-                  aria-expanded={isOpen}
-                  onClick={() => setOpenUserId(isOpen ? null : balance.userId)}
-                  type="button"
-                >
-                  <span>
-                    {balanceWords(balance, balance.userId === currentUserId)}
-                  </span>{" "}
-                  <span>{signedMoney(balance.balanceCents, currency)}</span>
-                </button>
-                {isOpen && (
-                  <ul id={`breakdown-${balance.userId}`}>
-                    {items.length === 0 && <li>Nothing yet.</li>}
-                    {items.map((item) => (
-                      <li key={`${item.kind}-${item.id}`}>
-                        <span>{item.description}</span>{" "}
-                        <time dateTime={item.date}>{item.date}</time>{" "}
-                        <span>{signedMoney(item.effectCents, currency)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            );
-          })}
+        {yours && (
+          <div>
+            <p className="eyebrow">Your balance</p>
+            {renderBalance(yours, true)}
+          </div>
+        )}
+        <ul aria-label="Everyone else">
+          {others.map((balance) => (
+            <li key={balance.userId}>{renderBalance(balance, false)}</li>
+          ))}
         </ul>
-        <p>Balances add up to {formatMoney(total, currency)}</p>
+        <p className="caption">
+          Balances add up to {formatMoney(total, currency)}
+        </p>
       </section>
 
       <section aria-labelledby="settle-up-heading">
