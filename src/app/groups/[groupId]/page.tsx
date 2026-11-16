@@ -62,6 +62,9 @@ export default async function GroupPage({
         <Link href={`/groups/${group.id}/balances`} className="underline">
           Balances
         </Link>
+        <Link href={`/groups/${group.id}/insights`} className="underline">
+          Insights
+        </Link>
       </nav>
 
       <MemberList
