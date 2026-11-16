@@ -42,12 +42,14 @@ export default async function GroupInsightsPage({
 
   return (
     <InsightsView
+      groupId={groupId}
       groupName={spending.groupName}
       currency={spending.currency}
       currentUserId={user.id}
       month={month}
       latestMonth={latestMonth}
       monthFromUrl={monthFromUrl}
+      members={spending.members}
       expenses={spending.expenses}
     />
   );

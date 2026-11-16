@@ -23,6 +23,13 @@ export type CategorySpending = {
 
 export type MonthSpending = { month: string; amountCents: number };
 
+export type MemberShare = {
+  userId: string;
+  amountCents: number;
+  /** Whole-number percent of the month's total; 0 for everyone when it is 0. */
+  percent: number;
+};
+
 /** `2026-10-31` becomes `2026-10`. */
 export function monthOf(isoDate: string): string {
   return isoDate.slice(0, 7);
@@ -115,4 +122,44 @@ export function monthlyTrend(
     const month = shiftMonth(endMonth, i - (months - 1));
     return { month, amountCents: monthTotal(expenses, scope, month) };
   });
+}
+
+/**
+ * What each person's shares came to in a month (US9). Every current member is
+ * listed, with 0 if they had no share. Someone who has left but still holds a
+ * share is kept, so the rows always add up to the month's total. Largest first,
+ * equal amounts by user id.
+ */
+export function memberShares(
+  expenses: readonly SpendingExpense[],
+  month: string,
+  memberIds: readonly string[],
+): MemberShare[] {
+  const totals = new Map<string, number>(memberIds.map((id) => [id, 0]));
+  for (const expense of expenses) {
+    if (monthOf(expense.expenseDate) !== month) continue;
+    for (const share of expense.shares) {
+      totals.set(
+        share.userId,
+        (totals.get(share.userId) ?? 0) + share.amountCents,
+      );
+    }
+  }
+
+  const sorted = [...totals.entries()].sort(
+    ([idA, a], [idB, b]) => b - a || idA.localeCompare(idB),
+  );
+  const total = sorted.reduce((sum, [, cents]) => sum + cents, 0);
+  const percents =
+    total === 0
+      ? sorted.map(() => 0)
+      : wholePercents(
+          sorted.map(([, cents]) => cents),
+          total,
+        );
+  return sorted.map(([userId, amountCents], index) => ({
+    userId,
+    amountCents,
+    percent: percents[index],
+  }));
 }

@@ -78,6 +78,25 @@ describe("US5 balances view", () => {
     expect(screen.getByText("Balances add up to $0.00")).toBeInTheDocument();
   });
 
+  it("starts with your own balance as a headline, then everyone else (#39)", async () => {
+    render(<BalancesView {...props} />);
+
+    const headline = screen.getByRole("button", {
+      name: "You are owed +$42.50",
+    });
+    const others = screen.getByRole("list", { name: "Everyone else" });
+    expect(
+      headline.compareDocumentPosition(others) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(within(others).queryByText("You are owed")).toBeNull();
+    expect(within(others).getByText("Alex owes")).toBeInTheDocument();
+    expect(within(others).getByText("Sam owes")).toBeInTheDocument();
+
+    await userEvent.click(headline);
+    expect(headline).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("shows the expenses and payments behind a balance", async () => {
     render(<BalancesView {...props} />);
 

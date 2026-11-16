@@ -51,8 +51,8 @@ export function SignUpForm({ next }: { next: string }) {
   if (checkEmail) {
     return (
       <div className="mx-auto w-full max-w-sm p-6" role="status">
-        <h1 className="text-2xl font-semibold">Check your email</h1>
-        <p className="mt-2 text-sm">
+        <h1>Check your email</h1>
+        <p className="text-label mt-2">
           We sent a link to confirm your address. After you confirm it, you can
           sign in.
         </p>
@@ -66,12 +66,10 @@ export function SignUpForm({ next }: { next: string }) {
       noValidate
       className="mx-auto flex w-full max-w-sm flex-col gap-4 p-6"
     >
-      <h1 className="text-2xl font-semibold">Create your account</h1>
+      <h1>Create your account</h1>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="displayName" className="text-sm font-medium">
-          Display name
-        </label>
+        <label htmlFor="displayName">Display name</label>
         <input
           id="displayName"
           type="text"
@@ -80,59 +78,55 @@ export function SignUpForm({ next }: { next: string }) {
           aria-describedby={
             errors.displayName ? "displayName-error" : undefined
           }
-          className="min-h-11 rounded border border-gray-400 px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("displayName")}
         />
         {errors.displayName && (
-          <p id="displayName-error" className="text-sm text-red-800">
+          <p id="displayName-error" className="text-label text-owes">
             {errors.displayName.message}
           </p>
         )}
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="email" className="text-sm font-medium">
-          Email
-        </label>
+        <label htmlFor="email">Email</label>
         <input
           id="email"
           type="email"
           autoComplete="email"
           aria-invalid={errors.email ? true : undefined}
           aria-describedby={errors.email ? "email-error" : undefined}
-          className="min-h-11 rounded border border-gray-400 px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("email")}
         />
         {errors.email && (
-          <p id="email-error" className="text-sm text-red-800">
+          <p id="email-error" className="text-label text-owes">
             Enter a valid email address.
           </p>
         )}
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="password" className="text-sm font-medium">
-          Password
-        </label>
+        <label htmlFor="password">Password</label>
         <input
           id="password"
           type="password"
           autoComplete="new-password"
           aria-invalid={errors.password ? true : undefined}
           aria-describedby="password-help"
-          className="min-h-11 rounded border border-gray-400 px-3"
+          className="border-muted min-h-11 rounded-md border px-3"
           {...register("password")}
         />
         <p
           id="password-help"
-          className={`text-sm ${errors.password ? "text-red-800" : "text-gray-700"}`}
+          className={`text-label ${errors.password ? "text-owes" : "text-muted"}`}
         >
           {errors.password?.message ?? "Use at least 8 characters."}
         </p>
       </div>
 
       {formError && (
-        <p role="alert" className="text-sm font-medium text-red-800">
+        <p role="alert" className="text-label text-owes">
           {formError}
         </p>
       )}
@@ -140,12 +134,12 @@ export function SignUpForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="min-h-11 rounded bg-black px-4 text-white disabled:opacity-60"
+        className="bg-accent text-on-accent min-h-11 rounded-md px-4 disabled:opacity-60"
       >
         Create account
       </button>
 
-      <p className="text-sm">
+      <p className="text-label">
         Already have an account?{" "}
         <Link
           href={`/sign-in?next=${encodeURIComponent(next)}`}
