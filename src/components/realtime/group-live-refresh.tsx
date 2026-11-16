@@ -17,7 +17,13 @@ type GroupLiveRefreshProps = {
  */
 export function GroupLiveRefresh({ groupId, userId }: GroupLiveRefreshProps) {
   const router = useRouter();
-  const refresh = useCallback(() => router.refresh(), [router]);
+  const refresh = useCallback(() => {
+    // An offline server refresh reloads the whole page into the browser's
+    // offline error page; the "online" catch-up refreshes instead (#64).
+    if (!navigator.onLine) return false;
+    router.refresh();
+    return true;
+  }, [router]);
   const { status } = useGroupRealtime(groupId, { userId, onChange: refresh });
   return <ConnectionStatus status={status} />;
 }
