@@ -12,12 +12,12 @@ vi.mock("next/navigation", () => ({
 const live = vi.hoisted(() => ({
   status: "live",
   calls: [] as Array<{ groupId: string; userId: string }>,
-  onChange: null as null | (() => void),
+  onChange: null as null | (() => unknown),
 }));
 vi.mock("@/lib/realtime/use-group-realtime", () => ({
   useGroupRealtime: (
     groupId: string,
-    options: { userId: string; onChange: () => void },
+    options: { userId: string; onChange: () => unknown },
   ) => {
     live.calls.push({ groupId, userId: options.userId });
     live.onChange = options.onChange;
@@ -83,10 +83,18 @@ beforeEach(() => {
   live.onChange = null;
 });
 
+function setOnline(online: boolean) {
+  Object.defineProperty(window.navigator, "onLine", {
+    configurable: true,
+    get: () => online,
+  });
+}
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   refresh.mockClear();
+  setOnline(true);
 });
 
 describe("US4 see changes as they happen: connection status", () => {
@@ -142,6 +150,39 @@ describe("US4 see changes as they happen: expenses page", () => {
     expect(refresh).not.toHaveBeenCalled();
   });
 
+  it("reports a failed refetch, so live updates try again (#64)", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(
+      new TypeError("Failed to fetch"),
+    );
+    renderExpensesPage();
+
+    let result: unknown;
+    await act(async () => {
+      result = await live.onChange?.();
+    });
+    expect(result).toBe(false);
+  });
+
+  it("skips the server refresh when the network drops during the refetch (#64)", async () => {
+    // The expenses arrive, but the browser is offline by the time they do.
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+      setOnline(false);
+      return new Response(JSON.stringify([pizza, groceries]));
+    });
+    renderExpensesPage();
+
+    let result: unknown;
+    await act(async () => {
+      result = await live.onChange?.();
+    });
+
+    expect(await screen.findByText("Pizza added by Admin")).toBeVisible();
+    // An offline server refresh makes Next.js reload the whole page, which
+    // shows the browser's own offline error page.
+    expect(refresh).not.toHaveBeenCalled();
+    expect(result).toBe(false);
+  });
+
   it('shows "Reconnecting…" when the connection drops', () => {
     live.status = "reconnecting";
     renderExpensesPage();
@@ -158,6 +199,18 @@ describe("US4 see changes as they happen: balances page", () => {
       live.onChange?.();
     });
     expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips the server refresh while the browser is offline (#64)", () => {
+    render(<GroupLiveRefresh groupId={groupId} userId={member} />);
+    setOnline(false);
+
+    let result: unknown;
+    act(() => {
+      result = live.onChange?.();
+    });
+    expect(refresh).not.toHaveBeenCalled();
+    expect(result).toBe(false);
   });
 
   it('shows "Reconnecting…" when the connection drops', () => {
