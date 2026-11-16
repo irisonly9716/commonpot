@@ -12,12 +12,15 @@ import {
   type SpendingExpense,
   type SpendingScope,
 } from "@/lib/domain/spending";
+import { GroupNav } from "@/components/groups/group-nav";
 import { formatMonth } from "@/lib/format-month";
 import { formatMoney } from "@/lib/format-money";
 import { ChartTable } from "./chart-table";
 import { SpendingChart } from "./spending-chart";
 
 type InsightsViewProps = {
+  /** Shows the group navigation when given. */
+  groupId?: string;
   groupName: string;
   currency: string;
   currentUserId: string;
@@ -99,6 +102,7 @@ function Toggle<T extends string>({
 }
 
 export function InsightsView({
+  groupId,
   groupName,
   currency,
   currentUserId,
@@ -152,6 +156,7 @@ export function InsightsView({
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-6 p-6">
+      {groupId && <GroupNav current="insights" groupId={groupId} />}
       <header>
         <p className="text-muted text-sm tracking-wide uppercase">
           {groupName}

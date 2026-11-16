@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { ActivityFeed } from "@/components/activity/activity-feed";
 import { AlertList } from "@/components/alerts/alert-list";
+import { GroupNav } from "@/components/groups/group-nav";
 import { ConnectionStatus } from "@/components/realtime/connection-status";
 import type { ActivityItem } from "@/lib/data/activity";
 import type { AlertItem } from "@/lib/data/alerts";
@@ -66,9 +67,7 @@ export function ExpensesPage({
 
   return (
     <main>
-      <nav aria-label="Group pages">
-        <a href={`/groups/${groupId}/balances`}>Balances and settle up</a>
-      </nav>
+      <GroupNav current="expenses" groupId={groupId} />
       <ConnectionStatus status={status} />
       <AlertList alerts={alerts} />
       <ExpenseForm
