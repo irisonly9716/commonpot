@@ -183,10 +183,11 @@ describe("US12 site admin API: lists show counts, never amounts", () => {
               ...keys(inner),
             ])
           : [];
-    const found = [
-      ...keys(await (await listUsers(call("GET", token))).json()),
-      ...keys(await (await listGroups(call("GET", token))).json()),
-    ];
+    const users = await listUsers(call("GET", token));
+    const groups = await listGroups(call("GET", token));
+    expect(users.status).toBe(200);
+    expect(groups.status).toBe(200);
+    const found = [...keys(await users.json()), ...keys(await groups.json())];
     expect(
       found.filter((key) => /amount|cents|description|total/i.test(key)),
     ).toEqual([]);
