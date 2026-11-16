@@ -4,7 +4,7 @@
 
 <!-- Which issues reached Done, what was demoed, which moved to Sprint 2 and why. -->
 
-Planned 2026-10-31 → 2026-11-04; the last Sprint 1 PRs merged on 2026-11-09.
+Planned for 2026-10-31 to 2026-11-04. The last Sprint 1 PRs merged on 2026-11-09.
 
 Reached Done:
 
@@ -17,7 +17,7 @@ Reached Done:
 | 8   | Add an expense with an equal or exact split (US3)        | #28 | 2026-11-09 |
 | 26  | AGENTS.md version table for `@hookform/resolvers` 7      | #27 | 2026-11-09 |
 
-Placeholder mockups for #5 merged in #22; #5 stays open for DESIGN.md and the final mockups.
+Placeholder mockups for #5 merged in #22. #5 stayed open for DESIGN.md and the final mockups.
 
 Moved to Sprint 2:
 
@@ -30,7 +30,7 @@ Demo: none yet. The app isn't deployed (#3) and has no sign-in page (#6), so the
 
 ## Retrospective
 
-Written on 2026-11-15 from our standups, PR reviews and Slack messages. Each partner checks their own feedback in the review of #62.
+Written on 2026-11-15 and updated on 2026-11-16, from our standups, PR reviews and Slack messages. Each of us checked our own feedback in review.
 
 ### What went well
 
@@ -49,8 +49,8 @@ Written on 2026-11-15 from our standups, PR reviews and Slack messages. Each par
 
 ### Partner feedback
 
-- **Arianna → Jay:** Your reviews were careful and specific. The three questions you asked on #25 all turned into real work later, and the pipeline you set up in #23 had the security job from day one, which we relied on all project. What would help me: start your first issue earlier in the sprint, and post a short standup every day, even when you're waiting on a merge, so I know what's blocking you.
-- **Jay → Arianna:** _From Jay's Slack message of 2026-11-07; Jay edits or replaces this in the review of #62._ "Your PRD, the 19 issues and the rules file made it really easy to pick things up, and it was great to see you act on my comments so quickly on #22 and #25."
+- **Arianna to Jay:** Your reviews were careful and specific. The three questions you asked on #25 all turned into real work later, and the pipeline you set up in #23 had the security job from day one, which we relied on all project. What would help me: start your first issue earlier in the sprint, and post a short standup every day, even when you're waiting on a merge, so I know what's blocking you.
+- **Jay to Arianna:** _From Jay's Slack message of 2026-11-07._ "Your PRD, the 19 issues and the rules file made it really easy to pick things up, and it was great to see you act on my comments so quickly on #22 and #25."
 
 ### Agent mistakes and rule changes
 
@@ -67,6 +67,6 @@ Written on 2026-11-15 from our standups, PR reviews and Slack messages. Each par
 ### Actions for Sprint 2
 
 - Review each other's PRs the same day, and agree on a merge order when PRs depend on each other.
-- Jay takes more of the remaining issues (#3, #5–#7, #13, #15–#18).
+- Jay takes more of the remaining issues (#3, #5, #6, #7, #13, #15, #16, #17 and #18).
 - Do sign-in (#6) and groups (#7) first: until they exist, nothing can be tried in a browser and there are no E2E tests.
 - Swap roles: Jay is Product Owner and Arianna Scrum Master.
