@@ -1,2 +1,268 @@
 @import "tailwindcss";
 @import "./theme.css";
+
+/*
+ * DESIGN.md base styles (#39). Every value comes from the theme tokens in
+ * theme.css, which is exported from DESIGN.md. Semantic elements get the
+ * design here, so pages without classes still match it; Tailwind utilities in
+ * a component win over these base styles.
+ */
+@layer base {
+  html,
+  body {
+    background-color: var(--color-paper);
+  }
+
+  body {
+    color: var(--color-ink);
+    font-size: var(--text-body);
+    line-height: 1.4;
+  }
+
+  main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-space-4);
+    width: 100%;
+    max-width: 44rem;
+    margin-inline: auto;
+    padding: var(--spacing-space-6) var(--spacing-space-5);
+  }
+
+  h1 {
+    font-size: var(--text-title);
+    font-weight: var(--font-weight-title);
+    line-height: 1.25;
+  }
+
+  h2,
+  caption {
+    color: var(--color-muted);
+    font-size: var(--text-eyebrow);
+    font-weight: var(--font-weight-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  h3 {
+    font-size: var(--text-body-strong);
+    font-weight: var(--font-weight-body-strong);
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  label,
+  legend {
+    font-size: var(--text-label);
+    font-weight: var(--font-weight-label);
+  }
+
+  /* A checkbox or radio inside its label reads as a row, not a form label. */
+  label:has(> input[type="checkbox"]),
+  label:has(> input[type="radio"]) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-space-2);
+    min-height: 44px;
+    font-size: var(--text-body);
+    font-weight: var(--font-weight-body);
+  }
+
+  input:not([type="checkbox"], [type="radio"], [type="hidden"]),
+  select,
+  textarea {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding-inline: var(--spacing-space-3);
+    border: 1px solid var(--color-muted);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  label + input,
+  label + select,
+  label + textarea {
+    margin-top: var(--spacing-space-1);
+  }
+
+  textarea {
+    padding-block: var(--spacing-space-2);
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-primary);
+  }
+
+  [aria-invalid="true"] {
+    border-color: var(--color-owes);
+  }
+
+  fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-space-1);
+  }
+
+  button {
+    min-height: 44px;
+    padding-inline: var(--spacing-space-3);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-primary);
+    font-size: var(--text-button);
+    font-weight: var(--font-weight-button);
+    cursor: pointer;
+  }
+
+  /* A form's submit button is its main action (DESIGN.md button-primary). */
+  form button[type="submit"] {
+    min-height: 48px;
+    border-color: var(--color-accent);
+    background-color: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  button:disabled,
+  form button[type="submit"]:disabled {
+    border-color: var(--color-disabled);
+    background-color: var(--color-disabled);
+    color: var(--color-on-disabled);
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Sections are flat white bands with a 1px line, never floating cards. */
+  main > section,
+  main > form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-space-3);
+    padding: var(--spacing-space-4);
+    border-bottom: 1px solid var(--color-line);
+    background-color: var(--color-surface);
+  }
+
+  section li + li,
+  section article + article {
+    border-top: 1px solid var(--color-line);
+  }
+
+  section li,
+  section article {
+    padding-block: var(--spacing-space-2);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  caption {
+    padding-bottom: var(--spacing-space-2);
+    text-align: left;
+  }
+
+  th,
+  td {
+    padding: var(--spacing-space-2);
+    border-bottom: 1px solid var(--color-line);
+    text-align: left;
+  }
+
+  th {
+    color: var(--color-muted);
+    font-size: var(--text-label);
+    font-weight: var(--font-weight-label);
+  }
+
+  [role="alert"] {
+    color: var(--color-owes);
+  }
+
+  [role="status"] {
+    color: var(--color-muted);
+  }
+
+  [role="alertdialog"],
+  dialog {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-space-3);
+    padding: var(--spacing-space-4);
+    border: 1px solid var(--color-line);
+    background-color: var(--color-surface);
+  }
+}
+
+@layer components {
+  .eyebrow {
+    color: var(--color-muted);
+    font-size: var(--text-eyebrow);
+    font-weight: var(--font-weight-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .display {
+    font-size: var(--text-display);
+    font-weight: var(--font-weight-display);
+    line-height: 1.2;
+  }
+
+  .caption {
+    color: var(--color-muted);
+    font-size: var(--text-caption);
+  }
+
+  /* Owed and owes always come with a sign or words; the color only repeats it. */
+  .amount-owed {
+    color: var(--color-owed);
+    font-weight: var(--font-weight-body-strong);
+  }
+
+  .amount-owes {
+    color: var(--color-owes);
+    font-weight: var(--font-weight-body-strong);
+  }
+
+  /* A whole row that opens details, such as one person's balance. */
+  .row-button {
+    display: flex;
+    width: 100%;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-space-3);
+    padding: var(--spacing-space-2) 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-weight: var(--font-weight-body);
+    text-align: left;
+  }
+
+  /* Your own balance, the headline of the balances page. */
+  .row-button.display {
+    justify-content: flex-start;
+    font-weight: var(--font-weight-display);
+  }
+
+  .nav-link[aria-current="page"] {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-body-strong);
+    text-decoration: none;
+  }
+}
