@@ -10,14 +10,20 @@ export type RealtimeStatus = "connecting" | "live" | "reconnecting";
 type GroupRealtimeOptions = {
   /** The signed-in user, so their own alerts arrive live too. */
   userId: string;
-  /** Called after other members change something; refetch the page data here. */
-  onChange: () => void;
+  /**
+   * Called after other members change something; refetch the page data here.
+   * Return (or resolve to) `false` when the refetch failed, and it is retried.
+   */
+  onChange: () => void | boolean | Promise<void | boolean>;
 };
 
 /** Changes that land within this window trigger one refetch, not one each. */
 const REFETCH_DELAY_MS = 200;
 /** How long to wait before opening a new channel after an unexpected close. */
 const RESUBSCRIBE_DELAY_MS = 1000;
+/** A failed refetch is tried again this often, this many times (#64). */
+const RETRY_DELAY_MS = 1000;
+const MAX_RETRIES = 5;
 
 /**
  * Live updates for one group (US4). Every expense add, edit and delete and every
@@ -47,14 +53,33 @@ export function useGroupRealtime(
     let refetchTimer: ReturnType<typeof setTimeout> | undefined;
     let resubscribeTimer: ReturnType<typeof setTimeout> | undefined;
 
+    // A network that is just coming back can fail the catch-up request, and
+    // nothing else would refetch until the next change, so try again (#64).
+    async function refetch(retriesLeft: number) {
+      // The network can drop during a delay; the "online" handler catches up.
+      if (!active || !navigator.onLine) return;
+      let ok: boolean;
+      try {
+        ok = (await onChangeRef.current()) !== false;
+      } catch {
+        ok = false;
+      }
+      if (ok || !active || retriesLeft === 0) return;
+      clearTimeout(refetchTimer);
+      refetchTimer = setTimeout(
+        () => void refetch(retriesLeft - 1),
+        RETRY_DELAY_MS,
+      );
+    }
+
     function scheduleRefetch() {
       // Offline fetches would fail; the "online" handler catches up instead.
-      // The network can also drop during the delay, so check again when it ends.
       if (!active || !navigator.onLine) return;
       clearTimeout(refetchTimer);
-      refetchTimer = setTimeout(() => {
-        if (active && navigator.onLine) onChangeRef.current();
-      }, REFETCH_DELAY_MS);
+      refetchTimer = setTimeout(
+        () => void refetch(MAX_RETRIES),
+        REFETCH_DELAY_MS,
+      );
     }
 
     function resubscribe(closed: RealtimeChannel) {
