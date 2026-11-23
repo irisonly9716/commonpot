@@ -2,7 +2,9 @@
 
 <!-- Standups are posted in Slack, starting with "Here is my daily standup", and copied here. At least 3 per partner per sprint. Always name issue numbers. -->
 
-Copied from our Slack channel, lightly trimmed. Times are Pacific. Sprint 1 was planned for 2026-10-31 → 2026-11-04; its last PRs merged on 2026-11-09.
+Copied from our Slack channel, lightly trimmed. Times are Pacific. Sprint 1 was planned for 2026-10-31 to 2026-11-04, and its last PRs merged on 2026-11-09.
+
+Arianna posted three standups this sprint (11/03, 11/07 and 11/09) and Jay posted two (11/03 and 11/06), one short of the three we aimed for. Jay's message of 11/07 covers the same ground, but it wasn't posted as a standup, so it is listed under "Other updates" and not counted.
 
 ## 2026-11-03 · Jay
 
@@ -28,7 +30,7 @@ Copied from our Slack channel, lightly trimmed. Times are Pacific. Sprint 1 was 
 ## 2026-11-06 · Jay
 
 - **Yesterday:** Went through Arianna's standup and the open PRs.
-- **Today:** Reviewed #24 (ran lint, typecheck, tests and build; all pass) and #25 (read the migration and RLS policies against the PRD). Updated #23 for the review comments (latest action versions, pinned Supabase CLI, `NEXT_PUBLIC_` variable mapping); pushing after #24 merges.
+- **Today:** Reviewed #24 (ran lint, typecheck, tests and build, and all pass) and #25 (read the migration and RLS policies against the PRD). Updated #23 for the review comments (latest action versions, pinned Supabase CLI, `NEXT_PUBLIC_` variable mapping), and will push it after #24 merges.
 - **Need from you / blockers:** Waiting on #24 and #25 before I start #6 and #7. My questions on #25 are in the review: leaving a group, suspended users, and function permissions.
 
 ## 2026-11-07 · Arianna
@@ -39,7 +41,7 @@ Copied from our Slack channel, lightly trimmed. Times are Pacific. Sprint 1 was 
   - Fixed the #25 comments: only the payer or the payee can record or delete a payment, and `anon`/`public` execute is revoked on every callable function. All 13 integration tests pass, and I replied to each point on the PR.
   - We're behind the plan, so I'm starting #8 on top of the #25 branch instead of waiting for it to merge, and will rebase once #25 is in.
 - **Need from you / blockers:**
-  1. Please review and approve #25; it's the last thing blocking `main` for #6, #7 and #8.
+  1. Please review and approve #25. It's the last thing blocking `main` for #6, #7 and #8.
   2. You can start #6 and #7 from the #25 branch now, so neither of us is waiting.
   3. Please push your #23 update so I can review it and get CI running.
 
@@ -47,10 +49,10 @@ Copied from our Slack channel, lightly trimmed. Times are Pacific. Sprint 1 was 
 
 - **Done:**
   - Merged #23 (CI), #25 (schema), #27, #22 and #28 after Jay's approvals. `main` now requires the 6 CI jobs plus 1 approval.
-  - Opened #30: fixes for Jay's #28 review points 1–3 (401 before 422, a 404 page for non-members, leftover cents ordered by user id, written into AGENTS.md).
+  - Opened #30: fixes for Jay's #28 review points 1 to 3 (401 before 422, a 404 page for non-members, leftover cents ordered by user id, written into AGENTS.md).
   - Opened #31 for #9: balances, settle-up suggestions and recording payments (payer or payee only), with the OpenAPI spec and a balances page. CI is green.
   - Closed Sprint 1 and moved its open issues to Sprint 2. The Sprint 2 plan is in #33: Jay is PO and Arianna is SM, swapped as planned.
-- **Next (Sprint 2 plan):** Jay takes #3, #5, #6, #7, #13, #15, #16, #17 and #18 (accounts, roles, design, deploy and insights); Arianna takes #10, #11, #12, #14 and #19 (expenses, real time, personal ledger, budgets, README). I did most of the Sprint 1 issues, so Jay gets more of the rest. If we run out of time, we drop #18 first, then #17 and #15; the Must stories stay.
+- **Next (Sprint 2 plan):** Jay takes #3, #5, #6, #7, #13, #15, #16, #17 and #18 (accounts, roles, design, deploy and insights). Arianna takes #10, #11, #12, #14 and #19 (expenses, real time, personal ledger, budgets, README). I did most of the Sprint 1 issues, so Jay gets more of the rest. If we run out of time, we drop #18 first, then #17 and #15. The Must stories stay.
 - **Need from you / blockers:**
   - Reviews on #30, #31 and #33. They don't touch the same files, so any order works.
   - #6 and #7 are the biggest blockers: without them nothing can be tried in a browser and we can't write E2E tests. Can you open the #6 PR by tomorrow evening?
