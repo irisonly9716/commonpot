@@ -105,6 +105,18 @@ export async function PUT(
     );
   }
 
+  // The category must belong to this group; RLS hides other groups' categories.
+  const { data: category, error: categoryError } = await access.supabase
+    .from("categories")
+    .select("id")
+    .eq("id", parsed.data.categoryId)
+    .eq("group_id", access.groupId)
+    .maybeSingle();
+  if (categoryError) {
+    return apiError("DATABASE_ERROR", "Could not check the category", 500);
+  }
+  if (!category) return apiError("NOT_FOUND", "Category not found", 404);
+
   const { data, error } = await access.supabase
     .from("budgets")
     .upsert(
