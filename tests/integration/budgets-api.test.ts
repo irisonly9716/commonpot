@@ -201,4 +201,30 @@ describe("US7 budgets API", () => {
     const budgets = (await response.json()) as Array<Record<string, unknown>>;
     expect(budgets[0]).toMatchObject({ spentCents: 0, status: "ok" });
   });
+
+  it("refuses a category that belongs to another group", async () => {
+    const other = await createGroup(
+      call("POST", "/api/v1/groups", outsider.token, {
+        name: `Other group ${Date.now()}`,
+        currency: "USD",
+      }),
+    );
+    const otherId = ((await other.json()) as { id: string }).id;
+    const otherCategories = await listCategories(
+      call("GET", `/api/v1/groups/${otherId}/categories`, outsider.token),
+      ctx(otherId),
+    );
+    const foreignCategory = (
+      (await otherCategories.json()) as Array<{ id: string }>
+    )[0].id;
+    const response = await setBudget(
+      call("PUT", `/api/v1/groups/${groupId}/budgets`, admin.token, {
+        categoryId: foreignCategory,
+        limitCents: 5_000,
+        month: MONTH,
+      }),
+      ctx(groupId),
+    );
+    expect(response.status).toBe(404);
+  });
 });
