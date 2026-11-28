@@ -32,18 +32,22 @@ export function thresholdsReached(
   );
 }
 
+function statusFor(reached: readonly AlertThreshold[]): BudgetStatus {
+  if (reached.includes(100)) return "over";
+  return reached.length > 0 ? "warning" : "ok";
+}
+
 export function budgetProgress(
   limitCents: number,
   spentCents: number,
 ): BudgetProgress {
   assertLimit(limitCents);
-  const reached = thresholdsReached(limitCents, spentCents);
   return {
     limitCents,
     spentCents,
     leftCents: limitCents - spentCents,
     percent: Math.floor((spentCents * 100) / limitCents),
-    status: reached.includes(100) ? "over" : reached.length ? "warning" : "ok",
+    status: statusFor(thresholdsReached(limitCents, spentCents)),
   };
 }
 
